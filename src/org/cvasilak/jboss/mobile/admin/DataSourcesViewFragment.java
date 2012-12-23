@@ -47,7 +47,7 @@ import java.util.Map;
 
 public class DataSourcesViewFragment extends SherlockListFragment {
 
-    private static final String TAG = "DataSourcesViewFragment";
+    private static final String TAG = DataSourcesViewFragment.class.getSimpleName();
 
     private JBossAdminApplication application;
 

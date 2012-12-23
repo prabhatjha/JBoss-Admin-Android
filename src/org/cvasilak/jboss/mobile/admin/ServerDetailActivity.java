@@ -35,7 +35,7 @@ import org.cvasilak.jboss.mobile.admin.model.ServersManager;
 
 public class ServerDetailActivity extends Activity {
 
-    private static final String TAG = "ServerDetailActivity";
+    private static final String TAG = ServerDetailActivity.class.getSimpleName();
 
     private EditText name;
     private EditText hostname;

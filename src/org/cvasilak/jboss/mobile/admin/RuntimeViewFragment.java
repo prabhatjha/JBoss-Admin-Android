@@ -33,8 +33,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import com.actionbarsherlock.app.SherlockListFragment;
-import org.cvasilak.jboss.mobile.admin.util.commonsware.MergeAdapter;
 import org.cvasilak.jboss.mobile.admin.net.Callback;
+import org.cvasilak.jboss.mobile.admin.util.commonsware.MergeAdapter;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -42,7 +42,8 @@ import java.util.List;
 import java.util.Map;
 
 public class RuntimeViewFragment extends SherlockListFragment {
-    private static final String TAG = "RuntimeViewFragment";
+
+    private static final String TAG = RuntimeViewFragment.class.getSimpleName();
 
     private JBossAdminApplication application;
 

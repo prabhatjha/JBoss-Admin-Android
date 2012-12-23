@@ -34,7 +34,7 @@ import com.actionbarsherlock.view.MenuInflater;
 
 public class JMSTypeSelectorViewFragment extends SherlockListFragment {
 
-    private static final String TAG = "JMSTypeSelectorViewFragment";
+    private static final String TAG = JMSTypeSelectorViewFragment.class.getSimpleName();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

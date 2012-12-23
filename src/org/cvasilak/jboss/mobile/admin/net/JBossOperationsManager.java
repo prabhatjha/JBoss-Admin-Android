@@ -10,7 +10,8 @@ import org.cvasilak.jboss.mobile.admin.util.ParametersMap;
 import java.util.*;
 
 public class JBossOperationsManager {
-    private static final String TAG = "JBossOperationsManager";
+
+    private static final String TAG = JBossOperationsManager.class.getSimpleName();
 
     private Context context;
 

@@ -41,7 +41,7 @@ import java.util.List;
 
 public class JMSTopicsViewController extends SherlockListFragment {
 
-    private static final String TAG = "JMSTopicsViewController";
+    private static final String TAG = JMSTopicsViewController.class.getSimpleName();
 
     private JBossAdminApplication application;
 

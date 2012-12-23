@@ -44,7 +44,7 @@ import org.cvasilak.jboss.mobile.admin.util.ParametersMap;
 
 public class TalkToJBossServerTask extends AsyncTask<ParametersMap, Void, JsonObject> {
 
-    private static final String TAG = "TalkToJBossServerTask";
+    private static final String TAG = TalkToJBossServerTask.class.getSimpleName();
 
     private Context context;
 

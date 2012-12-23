@@ -38,7 +38,7 @@ import java.util.Map;
 
 public class PropertiesViewFragment extends SherlockListFragment {
 
-    private static final String TAG = "PropertiesViewFragment";
+    private static final String TAG = PropertiesViewFragment.class.getSimpleName();
 
     private JBossAdminApplication application;
 

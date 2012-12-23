@@ -47,7 +47,7 @@ import org.cvasilak.jboss.mobile.admin.net.Callback;
 
 public class ServersViewActivity extends SherlockListActivity {
 
-    private static final String TAG = "ServersViewActivity";
+    private static final String TAG = ServersViewActivity.class.getSimpleName();
 
     public final static String ID_EXTRA = "org.cvasilak.servers._ID";
 

@@ -40,7 +40,7 @@ import java.util.Map;
 
 public class ProfileViewFragment extends SherlockListFragment {
 
-    private static final String TAG = "ProfileViewFragment";
+    private static final String TAG = ProfileViewFragment.class.getSimpleName();
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {

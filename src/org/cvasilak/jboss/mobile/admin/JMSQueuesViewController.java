@@ -41,7 +41,7 @@ import java.util.List;
 
 public class JMSQueuesViewController extends SherlockListFragment {
 
-    private static final String TAG = "JMSQueuesViewController";
+    private static final String TAG = JMSQueuesViewController.class.getSimpleName();
 
     private JBossAdminApplication application;
 

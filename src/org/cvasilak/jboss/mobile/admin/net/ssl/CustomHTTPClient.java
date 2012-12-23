@@ -40,7 +40,8 @@ import org.apache.http.protocol.HTTP;
 import java.security.KeyStore;
 
 public class CustomHTTPClient {
-    private static final String TAG = "CustomHTTPClient";
+
+    private static final String TAG = CustomHTTPClient.class.getSimpleName();
 
     private static AbstractHttpClient client;
 

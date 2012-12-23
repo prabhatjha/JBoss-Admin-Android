@@ -32,7 +32,7 @@ import org.cvasilak.jboss.mobile.admin.net.JBossOperationsManager;
 
 public class JBossAdminApplication extends Application {
 
-    private static final String TAG = "JBossAdminApplication";
+    private static final String TAG = JBossAdminApplication.class.getSimpleName();
 
     private ServersManager serversManager;
 

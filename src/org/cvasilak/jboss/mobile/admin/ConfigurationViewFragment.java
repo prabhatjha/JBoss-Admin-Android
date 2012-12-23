@@ -37,17 +37,17 @@ import com.actionbarsherlock.app.SherlockListFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
-import org.cvasilak.jboss.mobile.admin.util.commonsware.MergeAdapter;
 import org.cvasilak.jboss.mobile.admin.model.Metric;
 import org.cvasilak.jboss.mobile.admin.net.Callback;
 import org.cvasilak.jboss.mobile.admin.util.MetricsAdapter;
+import org.cvasilak.jboss.mobile.admin.util.commonsware.MergeAdapter;
 
 import java.util.ArrayList;
 import java.util.Map;
 
 public class ConfigurationViewFragment extends SherlockListFragment {
 
-    private static final String TAG = "ConfigurationViewFragment";
+    private static final String TAG = ConfigurationViewFragment.class.getSimpleName();
 
     private JBossAdminApplication application;
 

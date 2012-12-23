@@ -40,7 +40,7 @@ import java.util.List;
 
 public class WebConnectorTypeSelectorViewFragment extends SherlockListFragment {
 
-    private static final String TAG = "WebConnectorTypeSelectorViewFragment";
+    private static final String TAG = WebConnectorTypeSelectorViewFragment.class.getSimpleName();
 
     private JBossAdminApplication application;
 

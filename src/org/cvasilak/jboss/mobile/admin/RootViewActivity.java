@@ -30,7 +30,8 @@ import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 
 public class RootViewActivity extends SherlockFragmentActivity {
-    private static final String TAG = "RootViewActivity";
+
+    private static final String TAG = RootViewActivity.class.getSimpleName();
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

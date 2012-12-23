@@ -37,7 +37,7 @@ import java.util.List;
 
 public class ExtensionsViewFragment extends SherlockListFragment {
 
-    private static final String TAG = "ExtensionsViewFragment";
+    private static final String TAG = ExtensionsViewFragment.class.getSimpleName();
 
     private JBossAdminApplication application;
 
