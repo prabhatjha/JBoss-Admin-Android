@@ -54,6 +54,7 @@ public class JMSQueuesViewController extends SherlockListFragment {
         super.onCreate(savedInstanceState);
 
         Log.d(TAG, "@onCreate()");
+
         application = (JBossAdminApplication) getActivity().getApplication();
 
         adapter = new ArrayAdapter<String>(
@@ -115,7 +116,6 @@ public class JMSQueuesViewController extends SherlockListFragment {
                 for (JsonElement entry : jsonArray) {
                     adapter.add(entry.getAsString());
                 }
-
             }
 
             @Override
