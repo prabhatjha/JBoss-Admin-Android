@@ -35,9 +35,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import org.cvasilak.jboss.mobile.admin.net.Callback;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class ExtensionsViewFragment extends SherlockListFragment {
 
     private static final String TAG = ExtensionsViewFragment.class.getSimpleName();
@@ -94,16 +91,13 @@ public class ExtensionsViewFragment extends SherlockListFragment {
             public void onSuccess(JsonElement reply) {
                 progress.dismiss();
 
-                List<String> extensions = new ArrayList<String>();
+                adapter.clear();
 
                 JsonArray jsonArray = reply.getAsJsonArray();
 
                 for (JsonElement entry : jsonArray) {
-                    extensions.add(entry.getAsString());
+                    adapter.add(entry.getAsString());
                 }
-
-                adapter.clear();
-                adapter.addAll(extensions);
             }
 
             @Override
