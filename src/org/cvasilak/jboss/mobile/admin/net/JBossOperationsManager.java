@@ -97,7 +97,7 @@ public class JBossOperationsManager {
                 convAddress.add(group);
             }
 
-            if (address.get(0).equals("/")) {
+            if (!address.get(0).equals("/")) {
                 convAddress.addAll(address);
             }
 
@@ -321,6 +321,28 @@ public class JBossOperationsManager {
         ParametersMap params = ParametersMap.newMap()
                 .add("operation", "read-children-resources")
                 .add("child-type", "server-group");
+
+        task = new TalkToJBossServerTask(context, server, callback);
+        task.execute(params);
+    }
+
+    public void changeDeploymentStatus(String name, String group, boolean enable, final Callback callback) {
+        attach(callback);
+
+        ParametersMap params = ParametersMap.newMap()
+                .add("operation", enable ? "deploy" : "undeploy")
+                .add("address", prefixAddressWithDomainGroup(group, Arrays.asList("deployment", name)));
+
+        task = new TalkToJBossServerTask(context, server, callback);
+        task.execute(params);
+    }
+
+    public void removeDeployment(String name, String group, final Callback callback) {
+        attach(callback);
+
+        ParametersMap params = ParametersMap.newMap()
+                .add("operation", "remove")
+                .add("address", prefixAddressWithDomainGroup(group, Arrays.asList("deployment", name)));
 
         task = new TalkToJBossServerTask(context, server, callback);
         task.execute(params);

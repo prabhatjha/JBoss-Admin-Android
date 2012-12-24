@@ -19,10 +19,12 @@
 
     <string name="menu_refresh">Refresh</string>
 
+    <!--  Shared -->
+    <string name="context_menu_delete">Delete</string>
+    <string name="context_menu_edit">Edit</string>
+
     <!--  ServersViewActivity -->
     <string name="menu_add_server">Add</string>
-    <string name="context_menu_edit">Edit</string>
-    <string name="context_menu_delete">Delete</string>
 
     <!--  RootViewActivity -->
     <string name="tab_runtime">Runtime</string>
@@ -41,9 +43,17 @@
     <string name="not_enough_parameters">Please complete at least Hostname and Port fields!</string>
     <string name="error_on_save">An error occured during save!</string>
 
+    <!--  DeploymentsViewFragment -->
+    <string name="action">Action</string>
+    <string name="enable">Enable</string>
+    <string name="disable">Disable</string>
+    <string name="dialog_confirm_deployment_title">Confirm Action</string>
+    <string name="dialog_confirm_deployment_action">Are you sure you want to %1$s %2$s?</string>
+
     <!--  HttpRequest -->
     <string name="connecting">Connecting, please wait..</string>
     <string name="fetchingDomainInfo">Fetching domain information, please wait..</string>
     <string name="queryingServer">Querying server, please wait..</string>
+    <string name="applyingAction">Applying action, please wait..</string>
 
 </resources>
