@@ -163,7 +163,7 @@ public class RuntimeViewFragment extends SherlockListFragment {
         } else if (value.equals("Server Groups")) {
             fragment = new DomainServerGroupsFragment();
         } else if (value.equals("Manage Deployments")) {
-            Log.d(TAG, "Manage Deployments");
+            fragment = new DeploymentsViewFragment();
         }
 
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
