@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/context_add"
-        android:icon="@drawable/ic_action_add"
-        android:title="@string/menu_add_server"
-        android:showAsAction="always|withText">
+            android:id="@+id/context_add"
+            android:icon="@drawable/ic_action_add"
+            android:title="@string/menu_add_server"
+            android:showAsAction="always|withText">
     </item>
 
 </menu>

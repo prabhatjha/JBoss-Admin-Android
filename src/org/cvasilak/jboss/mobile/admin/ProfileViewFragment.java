@@ -43,7 +43,7 @@ public class ProfileViewFragment extends SherlockListFragment {
     private static final String TAG = ProfileViewFragment.class.getSimpleName();
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
         Log.d(TAG, "@onActivityCreated()");

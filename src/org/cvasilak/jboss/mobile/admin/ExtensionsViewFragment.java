@@ -31,8 +31,11 @@ import com.actionbarsherlock.app.SherlockListFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import org.cvasilak.jboss.mobile.admin.net.Callback;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ExtensionsViewFragment extends SherlockListFragment {
@@ -86,10 +89,18 @@ public class ExtensionsViewFragment extends SherlockListFragment {
     public void refresh() {
         progress = ProgressDialog.show(getSherlockActivity(), "", getString(R.string.queryingServer));
 
-        application.getOperationsManager().fetchExtensionsInformation(new Callback.FetchExtensionsCallback() {
+        application.getOperationsManager().fetchExtensionsInformation(new Callback() {
             @Override
-            public void onSuccess(List<String> extensions) {
+            public void onSuccess(JsonElement reply) {
                 progress.dismiss();
+
+                List<String> extensions = new ArrayList<String>();
+
+                JsonArray jsonArray = reply.getAsJsonArray();
+
+                for (JsonElement entry : jsonArray) {
+                    extensions.add(entry.getAsString());
+                }
 
                 adapter.clear();
                 adapter.addAll(extensions);

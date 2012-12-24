@@ -37,13 +37,14 @@ import com.actionbarsherlock.app.SherlockListFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.cvasilak.jboss.mobile.admin.model.Metric;
 import org.cvasilak.jboss.mobile.admin.net.Callback;
 import org.cvasilak.jboss.mobile.admin.util.MetricsAdapter;
 import org.cvasilak.jboss.mobile.admin.util.commonsware.MergeAdapter;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 public class ConfigurationViewFragment extends SherlockListFragment {
 
@@ -162,13 +163,15 @@ public class ConfigurationViewFragment extends SherlockListFragment {
     public void refresh() {
         progress = ProgressDialog.show(getSherlockActivity(), "", getString(R.string.queryingServer));
 
-        application.getOperationsManager().fetchConfigurationInformation(new Callback.FetchConfigurationInfoCallback() {
+        application.getOperationsManager().fetchConfigurationInformation(new Callback() {
             @Override
-            public void onSuccess(Map<String, String> info) {
+            public void onSuccess(JsonElement reply) {
                 progress.dismiss();
 
+                JsonObject jsonObj = reply.getAsJsonObject();
+
                 for (Metric metric : confMetrics) {
-                    metric.setValue(info.get(metric.getKey()));
+                    metric.setValue(jsonObj.get(metric.getKey()).getAsString());
                 }
 
                 // refresh table

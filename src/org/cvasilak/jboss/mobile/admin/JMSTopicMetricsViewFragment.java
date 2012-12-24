@@ -32,6 +32,8 @@ import com.actionbarsherlock.app.SherlockListFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.cvasilak.jboss.mobile.admin.model.Metric;
 import org.cvasilak.jboss.mobile.admin.net.Callback;
 import org.cvasilak.jboss.mobile.admin.net.JBossOperationsManager.JMSType;
@@ -39,6 +41,7 @@ import org.cvasilak.jboss.mobile.admin.util.MetricsAdapter;
 import org.cvasilak.jboss.mobile.admin.util.commonsware.MergeAdapter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 public class JMSTopicMetricsViewFragment extends SherlockListFragment {
@@ -181,14 +184,44 @@ public class JMSTopicMetricsViewFragment extends SherlockListFragment {
     public void refresh() {
         progress = ProgressDialog.show(getSherlockActivity(), "", getString(R.string.queryingServer));
 
-        application.getOperationsManager().fetchJMSQueueMetrics(topicName, JMSType.TOPIC, new Callback.FetchJMSMetricsCallback() {
+        application.getOperationsManager().fetchJMSQueueMetrics(topicName, JMSType.TOPIC, new Callback() {
             @Override
-            public void onSuccess(Map<String, String> info) {
+            public void onSuccess(JsonElement reply) {
                 progress.dismiss();
+
+                JsonObject jsonObj = reply.getAsJsonObject();
+
+                Map<String, String> info = new HashMap<String, String>();
+
+                // common metrics
+                int msgCount = jsonObj.getAsJsonPrimitive("message-count").getAsInt();
+                int delivCount = jsonObj.getAsJsonPrimitive("delivering-count").getAsInt();
+                float delivPerc = (msgCount != 0 ? ((float) delivCount / msgCount) * 100 : 0);
+                int msgAdded = jsonObj.getAsJsonPrimitive("messages-added").getAsInt();
+
+                info.put("message-count", String.format("%d", msgCount));
+                info.put("delivering-count", String.format("%d (%.0f%%)", delivCount, delivPerc));
+                info.put("messages-added", String.format("%d", msgAdded));
 
                 for (Metric metric : inFlightMetrics) {
                     metric.setValue(info.get(metric.getKey()));
                 }
+
+                int durCount = jsonObj.getAsJsonPrimitive("durable-message-count").getAsInt();
+                float durPerc = (msgAdded != 0 ? ((float) durCount / msgAdded) * 100 : 0);
+
+                int nonDurCount = jsonObj.getAsJsonPrimitive("non-durable-message-count").getAsInt();
+                float nonDurPerc = (msgAdded != 0 ? ((float) nonDurCount / msgAdded) * 100 : 0);
+
+                int subCount = jsonObj.getAsJsonPrimitive("subscription-count").getAsInt();
+                int durSubCount = jsonObj.getAsJsonPrimitive("durable-subscription-count").getAsInt();
+                int nonDurSubCount = jsonObj.getAsJsonPrimitive("non-durable-subscription-count").getAsInt();
+
+                info.put("durable-message-count", String.format("%d (%.0f%%)", durCount, durPerc));
+                info.put("non-durable-message-count", String.format("%d (%.0f%%)", nonDurCount, nonDurPerc));
+                info.put("subscription-count", String.format("%d", subCount));
+                info.put("durable-subscription-count", String.format("%d", durSubCount));
+                info.put("non-durable-subscription-count", String.format("%d", nonDurSubCount));
 
                 for (Metric metric : msgProcessedMetrics) {
                     metric.setValue(info.get(metric.getKey()));

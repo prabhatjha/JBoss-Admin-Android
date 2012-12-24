@@ -32,13 +32,15 @@ import com.actionbarsherlock.app.SherlockListFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.cvasilak.jboss.mobile.admin.model.Metric;
 import org.cvasilak.jboss.mobile.admin.net.Callback;
 import org.cvasilak.jboss.mobile.admin.util.MetricsAdapter;
 import org.cvasilak.jboss.mobile.admin.util.commonsware.MergeAdapter;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 public class WebConnectorMetricsViewFragment extends SherlockListFragment {
@@ -84,7 +86,6 @@ public class WebConnectorMetricsViewFragment extends SherlockListFragment {
         MergeAdapter adapter = new MergeAdapter();
 
         TextView sectionHeader;
-        List<Metric> metrics;
 
         // Section: General
         sectionHeader = new TextView(getActivity());
@@ -163,14 +164,36 @@ public class WebConnectorMetricsViewFragment extends SherlockListFragment {
     public void refresh() {
         progress = ProgressDialog.show(getSherlockActivity(), "", getString(R.string.queryingServer));
 
-        application.getOperationsManager().fetchWebConnectorMetrics(connectorName, new Callback.FetchWebConnectorMetricsCallback() {
+        application.getOperationsManager().fetchWebConnectorMetrics(connectorName, new Callback() {
             @Override
-            public void onSuccess(Map<String, String> info) {
+            public void onSuccess(JsonElement reply) {
                 progress.dismiss();
+
+                JsonObject jsonObj = reply.getAsJsonObject();
+
+                Map<String, String> info = new HashMap<String, String>();
+
+                long bytesSent = jsonObj.getAsJsonPrimitive("bytesSent").getAsLong();
+                long bytesReceived = jsonObj.getAsJsonPrimitive("bytesReceived").getAsLong();
+
+                info.put("bytesSent", String.format("%d", bytesSent));
+                info.put("bytesReceived", String.format("%d", bytesReceived));
+                info.put("protocol", jsonObj.get("protocol").getAsString());
 
                 for (Metric metric : generalMetrics) {
                     metric.setValue(info.get(metric.getKey()));
                 }
+
+                int requestCount = jsonObj.getAsJsonPrimitive("requestCount").getAsInt();
+                int errorCount = jsonObj.getAsJsonPrimitive("errorCount").getAsInt();
+                float errorPerc = (requestCount != 0 ? ((float) errorCount / requestCount) * 100 : 0);
+                int processingTime = jsonObj.getAsJsonPrimitive("processingTime").getAsInt();
+                int maxTime = jsonObj.getAsJsonPrimitive("maxTime").getAsInt();
+
+                info.put("requestCount", String.format("%d", requestCount));
+                info.put("errorCount", String.format("%d (%.0f%%)", errorCount, errorPerc));
+                info.put("processingTime", String.format("%d", processingTime));
+                info.put("maxTime", String.format("%d", maxTime));
 
                 for (Metric metric : reqPerConnectorMetrics) {
                     metric.setValue(info.get(metric.getKey()));

@@ -38,7 +38,7 @@ import java.util.List;
 
 public class ServersManager {
 
-    private static final String TAG = "ServersManager";
+    private static final String TAG = ServersManager.class.getSimpleName();
 
     private List<Server> servers;
     private Context context;

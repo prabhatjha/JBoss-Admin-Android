@@ -34,10 +34,10 @@ import com.actionbarsherlock.app.SherlockListFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import org.cvasilak.jboss.mobile.admin.net.Callback;
 import org.cvasilak.jboss.mobile.admin.net.JBossOperationsManager.JMSType;
-
-import java.util.List;
 
 public class JMSQueuesViewController extends SherlockListFragment {
 
@@ -54,14 +54,6 @@ public class JMSQueuesViewController extends SherlockListFragment {
         super.onCreate(savedInstanceState);
 
         Log.d(TAG, "@onCreate()");
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        Log.d(TAG, "@onActivityCreated()");
-
         application = (JBossAdminApplication) getActivity().getApplication();
 
         adapter = new ArrayAdapter<String>(
@@ -111,13 +103,19 @@ public class JMSQueuesViewController extends SherlockListFragment {
     public void refresh() {
         progress = ProgressDialog.show(getSherlockActivity(), "", getString(R.string.queryingServer));
 
-        application.getOperationsManager().fetchJMSMessagingModelList(JMSType.QUEUE, new Callback.FetchJMSMessagingModelListCallback() {
+        application.getOperationsManager().fetchJMSMessagingModelList(JMSType.QUEUE, new Callback() {
             @Override
-            public void onSuccess(List<String> queues) {
+            public void onSuccess(JsonElement reply) {
                 progress.dismiss();
 
                 adapter.clear();
-                adapter.addAll(queues);
+
+                JsonArray jsonArray = reply.getAsJsonArray();
+
+                for (JsonElement entry : jsonArray) {
+                    adapter.add(entry.getAsString());
+                }
+
             }
 
             @Override

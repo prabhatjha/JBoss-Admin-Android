@@ -41,6 +41,7 @@ import com.actionbarsherlock.app.SherlockListActivity;
 import com.actionbarsherlock.view.ActionMode;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
+import com.google.gson.JsonElement;
 import org.cvasilak.jboss.mobile.admin.model.Server;
 import org.cvasilak.jboss.mobile.admin.model.ServersManager;
 import org.cvasilak.jboss.mobile.admin.net.Callback;
@@ -60,7 +61,7 @@ public class ServersViewActivity extends SherlockListActivity {
 
     private ProgressDialog progress;
 
-    ActionMode mActionMode;
+    private ActionMode mActionMode;
 
     /**
      * Called when the activity is first created.
@@ -101,7 +102,7 @@ public class ServersViewActivity extends SherlockListActivity {
             }
         });
 
-        Callback.FetchJBossVersionCallback callback = (Callback.FetchJBossVersionCallback) getLastNonConfigurationInstance();
+        Callback callback = (Callback) getLastNonConfigurationInstance();
 
         if (callback != null) {
             if (!application.getOperationsManager().isTaskFinished()) {
@@ -154,7 +155,7 @@ public class ServersViewActivity extends SherlockListActivity {
         @Override
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
             switch (item.getItemId()) {
-                case R.id.context_edit:
+                case R.id.servers_context_edit:
                     // Launch activity to view/edit the currently selected item
                     Intent i = new Intent(ServersViewActivity.this,
                             ServerDetailActivity.class);
@@ -165,7 +166,7 @@ public class ServersViewActivity extends SherlockListActivity {
                     mActionMode.finish();
                     return true;
 
-                case R.id.context_delete:
+                case R.id.servers_context_delete:
                     AlertDialog.Builder alertDialog = new AlertDialog.Builder(
                             ServersViewActivity.this);
 
@@ -224,9 +225,9 @@ public class ServersViewActivity extends SherlockListActivity {
 
         progress = ProgressDialog.show(this, "", getString(R.string.connecting));
 
-        application.getOperationsManager().fetchJBossVersion(new Callback.FetchJBossVersionCallback() {
+        application.getOperationsManager().fetchJBossVersion(new Callback() {
             @Override
-            public void onSuccess(String version) {
+            public void onSuccess(JsonElement reply) {
                 progress.hide();
 
                 Intent i = new Intent(ServersViewActivity.this,
@@ -234,7 +235,7 @@ public class ServersViewActivity extends SherlockListActivity {
 
                 startActivity(i);
 
-                Log.d(TAG, version);
+                Log.d(TAG, reply.getAsString());
             }
 
             @Override
@@ -264,6 +265,7 @@ public class ServersViewActivity extends SherlockListActivity {
             super(ServersViewActivity.this, android.R.layout.simple_list_item_2, serversManager.getServers());
         }
 
+        @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             TwoLineListItem row;
 

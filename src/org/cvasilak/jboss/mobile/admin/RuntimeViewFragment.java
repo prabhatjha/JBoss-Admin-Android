@@ -33,6 +33,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import com.actionbarsherlock.app.SherlockListFragment;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.cvasilak.jboss.mobile.admin.net.Callback;
 import org.cvasilak.jboss.mobile.admin.util.commonsware.MergeAdapter;
 
@@ -57,11 +59,66 @@ public class RuntimeViewFragment extends SherlockListFragment {
 
         application = (JBossAdminApplication) getActivity().getApplication();
 
+        // if not already set
+        if (application.getOperationsManager().getDomainHost() == null) {
+            // determine whether we are running in STANDALONE or DOMAIN mode
+            progress = ProgressDialog.show(getSherlockActivity(), "", getString(R.string.fetchingDomainInfo));
+
+            application.getOperationsManager().fetchActiveServerInformation(new Callback() {
+                @Override
+                public void onSuccess(JsonElement reply) {
+                    progress.dismiss();
+
+                    JsonObject hosts = reply.getAsJsonObject();
+
+                    String host = null;
+                    String server = null;
+
+                    for (Map.Entry<String, JsonElement> e : hosts.entrySet()) {
+                        host = e.getKey();
+
+                        JsonObject hostInfo = e.getValue().getAsJsonObject();
+                        JsonObject servers = hostInfo.getAsJsonObject("server");
+
+                        // TODO restructure loop
+                        for (Map.Entry<String, JsonElement> p : servers.entrySet()) {
+                            server = p.getKey();
+
+                            break;
+                        }
+                        if (server != null)
+                            break;
+                    }
+
+                    application.getOperationsManager().changeActiveMonitoringServer(host, server);
+
+                    updateTable();
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    progress.dismiss();
+
+                    // HTTP/1.1 500 Internal Server Error
+                    // occurred doing :read-children-resources(child-type=host)
+                    // the server is running in standalone mode, we can live with that
+                    updateTable();
+                }
+            });
+        }
+    }
+
+    private void updateTable() {
         Map<String, List<String>> table = new HashMap<String, List<String>>();
 
         table.put("Server Status", Arrays.asList("Configuration", "JVM"));
         table.put("Subsystem Metrics", Arrays.asList("Data Sources", "JMS Destinations", "Transactions", "Web"));
-        table.put("Deployments", Arrays.asList("Deployment Content", "Server Groups"));
+
+        if (application.getOperationsManager().isDomainController()) {
+            table.put("Deployments", Arrays.asList("Deployment Content", "Server Groups"));
+        } else {
+            table.put("Deployments", Arrays.asList("Manage Deployments"));
+        }
 
         MergeAdapter adapter = new MergeAdapter();
 
@@ -81,32 +138,7 @@ public class RuntimeViewFragment extends SherlockListFragment {
         }
 
         setListAdapter(adapter);
-
-        // if not already set
-        if (application.getOperationsManager().getDomainHost() == null) {
-            // determine whether we are running in STANDALONE or DOMAIN mode
-            progress = ProgressDialog.show(getSherlockActivity(), "", getString(R.string.fetchingDomainInfo));
-
-            application.getOperationsManager().fetchActiveServerInformation(new Callback.FetchActiveServerInfoCallback() {
-                @Override
-                public void onSuccess(String host, String server) {
-                    progress.dismiss();
-
-                    application.getOperationsManager().changeActiveMonitoringServer(host, server);
-                }
-
-                @Override
-                public void onFailure(Exception e) {
-                    progress.dismiss();
-
-                    // HTTP/1.1 500 Internal Server Error
-                    // occurred doing :read-children-resources(child-type=host)
-                    // the server is running in standalone mode, we can live with that
-                }
-            });
-        }
     }
-
 
     @Override
     public void onListItemClick(ListView list, View view, int position, long id) {
@@ -126,6 +158,12 @@ public class RuntimeViewFragment extends SherlockListFragment {
             fragment = new TransactionMetricsViewFragment();
         } else if (value.equals("Web")) {
             fragment = new WebConnectorTypeSelectorViewFragment();
+        } else if (value.equals("Deployment Content")) {
+            fragment = new DeploymentsViewFragment();
+        } else if (value.equals("Server Groups")) {
+            fragment = new DomainServerGroupsFragment();
+        } else if (value.equals("Manage Deployments")) {
+            Log.d(TAG, "Manage Deployments");
         }
 
         FragmentTransaction transaction = getFragmentManager().beginTransaction();

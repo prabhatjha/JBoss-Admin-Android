@@ -39,11 +39,11 @@ import com.actionbarsherlock.app.SherlockListFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.cvasilak.jboss.mobile.admin.net.Callback;
 import org.cvasilak.jboss.mobile.admin.net.JBossOperationsManager.DataSourceType;
-
-import java.util.List;
-import java.util.Map;
 
 public class DataSourcesViewFragment extends SherlockListFragment {
 
@@ -107,23 +107,23 @@ public class DataSourcesViewFragment extends SherlockListFragment {
     public void refresh() {
         progress = ProgressDialog.show(getSherlockActivity(), "", getString(R.string.queryingServer));
 
-        application.getOperationsManager().fetchDataSourceList(new Callback.FetchDataSourceListCallback() {
+        application.getOperationsManager().fetchDataSourceList(new Callback() {
             @Override
-            public void onSuccess(Map<String, List<String>> info) {
+            public void onSuccess(JsonElement reply) {
                 progress.dismiss();
 
                 adapter.clear();
 
-                List<String> list;
+                JsonObject jsonObj = reply.getAsJsonObject();
 
-                list = info.get("ds");
-                for (String dsName : list) {
-                    adapter.add(new DataSource(dsName, DataSourceType.StandardDataSource));
+                JsonArray jsonDsList = jsonObj.getAsJsonObject("step-1").getAsJsonArray("result");
+                for (JsonElement ds : jsonDsList) {
+                    adapter.add(new DataSource(ds.getAsString(), DataSourceType.StandardDataSource));
                 }
 
-                list = info.get("xa-ds");
-                for (String dsName : list) {
-                    adapter.add(new DataSource(dsName, DataSourceType.XADataSource));
+                JsonArray jsonXADsList = jsonObj.getAsJsonObject("step-2").getAsJsonArray("result");
+                for (JsonElement ds : jsonXADsList) {
+                    adapter.add(new DataSource(ds.getAsString(), DataSourceType.XADataSource));
                 }
             }
 

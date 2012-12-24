@@ -30,6 +30,8 @@ import com.actionbarsherlock.app.SherlockListFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.cvasilak.jboss.mobile.admin.model.Metric;
 import org.cvasilak.jboss.mobile.admin.net.Callback;
 import org.cvasilak.jboss.mobile.admin.util.MetricsAdapter;
@@ -85,18 +87,20 @@ public class PropertiesViewFragment extends SherlockListFragment {
     public void refresh() {
         progress = ProgressDialog.show(getSherlockActivity(), "", getString(R.string.queryingServer));
 
-        application.getOperationsManager().fetchPropertiesInformation(new Callback.FetchPropertiesCallback() {
+        application.getOperationsManager().fetchPropertiesInformation(new Callback() {
             @Override
-            public void onSuccess(Map<String, String> info) {
+            public void onSuccess(JsonElement reply) {
                 progress.dismiss();
 
                 adapter.clear();
 
-                for (Map.Entry<String, String> entry : info.entrySet()) {
+                JsonObject jsonObj = reply.getAsJsonObject();
+
+                for (Map.Entry<String, JsonElement> entry : jsonObj.entrySet()) {
                     Metric metric = new Metric();
 
                     metric.setName(entry.getKey());
-                    metric.setValue(entry.getValue());
+                    metric.setValue(entry.getValue().toString());
 
                     adapter.add(metric);
                 }

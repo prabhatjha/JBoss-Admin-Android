@@ -32,12 +32,15 @@ import com.actionbarsherlock.app.SherlockListFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.cvasilak.jboss.mobile.admin.model.Metric;
 import org.cvasilak.jboss.mobile.admin.net.Callback;
 import org.cvasilak.jboss.mobile.admin.util.MetricsAdapter;
 import org.cvasilak.jboss.mobile.admin.util.commonsware.MergeAdapter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 public class TransactionMetricsViewFragment extends SherlockListFragment {
@@ -145,10 +148,34 @@ public class TransactionMetricsViewFragment extends SherlockListFragment {
     public void refresh() {
         progress = ProgressDialog.show(getSherlockActivity(), "", getString(R.string.queryingServer));
 
-        application.getOperationsManager().fetchTranscationMetrics(new Callback.FetchTransactionMetricsCallback() {
+        application.getOperationsManager().fetchTranscationMetrics(new Callback() {
             @Override
-            public void onSuccess(Map<String, String> info) {
+            public void onSuccess(JsonElement reply) {
                 progress.dismiss();
+
+                JsonObject jsonObj = reply.getAsJsonObject();
+
+                Map<String, String> info = new HashMap<String, String>();
+
+                int total = jsonObj.getAsJsonPrimitive("number-of-transactions").getAsInt();
+                int committed = jsonObj.getAsJsonPrimitive("number-of-committed-transactions").getAsInt();
+                float committedPerc = (total != 0 ? ((float) committed / total) * 100 : 0);
+
+                int aborted = jsonObj.getAsJsonPrimitive("number-of-aborted-transactions").getAsInt();
+                float abortedPerc = (total != 0 ? ((float) aborted / total) * 100 : 0);
+
+                int timedOut = jsonObj.getAsJsonPrimitive("number-of-timed-out-transactions").getAsInt();
+                float timedOutPerc = (total != 0 ? ((float) timedOut / total) * 100 : 0);
+
+                int appRollbacks = jsonObj.getAsJsonPrimitive("number-of-application-rollbacks").getAsInt();
+                int resRollbacks = jsonObj.getAsJsonPrimitive("number-of-resource-rollbacks").getAsInt();
+
+                info.put("number-of-transactions", String.format("%d", total));
+                info.put("number-of-committed-transactions", String.format("%d (%.0f%%)", committed, committedPerc));
+                info.put("number-of-aborted-transactions", String.format("%d (%.0f%%)", aborted, abortedPerc));
+                info.put("number-of-timed-out-transactions", String.format("%d (%.0f%%)", timedOut, timedOutPerc));
+                info.put("number-of-application-rollbacks", String.format("%d", appRollbacks));
+                info.put("number-of-resource-rollbacks", String.format("%d", resRollbacks));
 
                 for (Metric metric : sucFailMetrics) {
                     metric.setValue(info.get(metric.getKey()));

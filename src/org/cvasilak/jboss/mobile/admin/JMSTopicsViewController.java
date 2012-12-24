@@ -34,10 +34,10 @@ import com.actionbarsherlock.app.SherlockListFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import org.cvasilak.jboss.mobile.admin.net.Callback;
 import org.cvasilak.jboss.mobile.admin.net.JBossOperationsManager.JMSType;
-
-import java.util.List;
 
 public class JMSTopicsViewController extends SherlockListFragment {
 
@@ -104,13 +104,18 @@ public class JMSTopicsViewController extends SherlockListFragment {
     public void refresh() {
         progress = ProgressDialog.show(getSherlockActivity(), "", getString(R.string.queryingServer));
 
-        application.getOperationsManager().fetchJMSMessagingModelList(JMSType.TOPIC, new Callback.FetchJMSMessagingModelListCallback() {
+        application.getOperationsManager().fetchJMSMessagingModelList(JMSType.TOPIC, new Callback() {
             @Override
-            public void onSuccess(List<String> topics) {
+            public void onSuccess(JsonElement reply) {
                 progress.dismiss();
 
                 adapter.clear();
-                adapter.addAll(topics);
+
+                JsonArray jsonArray = reply.getAsJsonArray();
+
+                for (JsonElement entry : jsonArray) {
+                    adapter.add(entry.getAsString());
+                }
             }
 
             @Override

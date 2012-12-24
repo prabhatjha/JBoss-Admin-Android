@@ -42,7 +42,7 @@ import org.cvasilak.jboss.mobile.admin.model.Server;
 import org.cvasilak.jboss.mobile.admin.net.ssl.CustomHTTPClient;
 import org.cvasilak.jboss.mobile.admin.util.ParametersMap;
 
-public class TalkToJBossServerTask extends AsyncTask<ParametersMap, Void, JsonObject> {
+public class TalkToJBossServerTask extends AsyncTask<ParametersMap, Void, JsonElement> {
 
     private static final String TAG = TalkToJBossServerTask.class.getSimpleName();
 
@@ -52,7 +52,7 @@ public class TalkToJBossServerTask extends AsyncTask<ParametersMap, Void, JsonOb
 
     private Server server;
 
-    private Reply callback;
+    private Callback callback;
 
     private Exception exception;
 
@@ -61,7 +61,7 @@ public class TalkToJBossServerTask extends AsyncTask<ParametersMap, Void, JsonOb
     private Gson gjson;
     private JsonParser parser;
 
-    public TalkToJBossServerTask(Context context, Server server, Reply callback) {
+    public TalkToJBossServerTask(Context context, Server server, Callback callback) {
         this.context = context;
         this.client = CustomHTTPClient.getHttpClient();
         this.server = server;
@@ -84,7 +84,7 @@ public class TalkToJBossServerTask extends AsyncTask<ParametersMap, Void, JsonOb
     }
 
     @Override
-    protected JsonObject doInBackground(ParametersMap... objects) {
+    protected JsonElement doInBackground(ParametersMap... objects) {
         if (client == null) {
             return null;
         }
@@ -123,27 +123,33 @@ public class TalkToJBossServerTask extends AsyncTask<ParametersMap, Void, JsonOb
     }
 
     @Override
-    protected void onPostExecute(JsonObject json) {
-        super.onPostExecute(json);
+    protected void onPostExecute(JsonElement reply) {
+        super.onPostExecute(reply);
 
         isTaskFinished = true;
 
-        if (!json.isJsonObject() || !json.has("outcome"))
+        if (callback == null)
+            return;
+
+        if (!reply.isJsonObject())
+            callback.onFailure(new RuntimeException("Invalid Response from server!"));
+
+        JsonObject jsonObj = (JsonObject) reply;
+
+        if (!jsonObj.has("outcome"))
             callback.onFailure(new RuntimeException("Invalid Response from server!"));
         else {
-            String outcome = json.get("outcome").getAsString();
+            String outcome = jsonObj.get("outcome").getAsString();
 
-            if (callback != null) {
-                if (outcome.equals("success")) {
-                    callback.onSuccess(json.get("result"));
-                } else {
-                    JsonElement elem = json.get("failure-description");
+            if (outcome.equals("success")) {
+                callback.onSuccess(jsonObj.get("result"));
+            } else {
+                JsonElement elem = jsonObj.get("failure-description");
 
-                    if (elem.isJsonPrimitive()) {
-                        callback.onFailure(new RuntimeException(elem.getAsString()));
-                    } else if (elem.isJsonObject())
-                        callback.onFailure(new RuntimeException(elem.getAsJsonObject().get("domain-failure-description").getAsString()));
-                }
+                if (elem.isJsonPrimitive()) {
+                    callback.onFailure(new RuntimeException(elem.getAsString()));
+                } else if (elem.isJsonObject())
+                    callback.onFailure(new RuntimeException(elem.getAsJsonObject().get("domain-failure-description").getAsString()));
             }
         }
 
@@ -161,10 +167,11 @@ public class TalkToJBossServerTask extends AsyncTask<ParametersMap, Void, JsonOb
         return isTaskFinished;
     }
 
-    interface Reply {
+    public void attach(Callback callback) {
+        this.callback = callback;
+    }
 
-        public void onSuccess(JsonElement json);
-
-        public void onFailure(Exception e);
+    public void detach() {
+        this.callback = null;
     }
 }

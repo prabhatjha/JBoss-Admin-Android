@@ -32,6 +32,8 @@ import com.actionbarsherlock.app.SherlockListFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.cvasilak.jboss.mobile.admin.model.Metric;
 import org.cvasilak.jboss.mobile.admin.net.Callback;
 import org.cvasilak.jboss.mobile.admin.net.JBossOperationsManager.JMSType;
@@ -39,6 +41,7 @@ import org.cvasilak.jboss.mobile.admin.util.MetricsAdapter;
 import org.cvasilak.jboss.mobile.admin.util.commonsware.MergeAdapter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 public class JMSQueueMetricsViewFragment extends SherlockListFragment {
@@ -178,18 +181,37 @@ public class JMSQueueMetricsViewFragment extends SherlockListFragment {
     public void refresh() {
         progress = ProgressDialog.show(getSherlockActivity(), "", getString(R.string.queryingServer));
 
-        application.getOperationsManager().fetchJMSQueueMetrics(queueName, JMSType.QUEUE, new Callback.FetchJMSMetricsCallback() {
+        application.getOperationsManager().fetchJMSQueueMetrics(queueName, JMSType.QUEUE, new Callback() {
             @Override
-            public void onSuccess(Map<String, String> info) {
+            public void onSuccess(JsonElement reply) {
                 progress.dismiss();
+
+                JsonObject jsonObj = reply.getAsJsonObject();
+
+                Map<String, String> info = new HashMap<String, String>();
+
+                int msgCount = jsonObj.getAsJsonPrimitive("message-count").getAsInt();
+                int delivCount = jsonObj.getAsJsonPrimitive("delivering-count").getAsInt();
+                float delivPerc = (msgCount != 0 ? ((float) delivCount / msgCount) * 100 : 0);
+                int msgAdded = jsonObj.getAsJsonPrimitive("messages-added").getAsInt();
+
+                info.put("message-count", String.format("%d", msgCount));
+                info.put("delivering-count", String.format("%d (%.0f%%)", delivCount, delivPerc));
+                info.put("messages-added", String.format("%d", msgAdded));
 
                 for (Metric metric : inFlightMetrics) {
                     metric.setValue(info.get(metric.getKey()));
                 }
 
+                int schCount = jsonObj.getAsJsonPrimitive("scheduled-count").getAsInt();
+                info.put("scheduled-count", String.format("%d", schCount));
+
                 for (Metric metric : msgProcessedMetrics) {
                     metric.setValue(info.get(metric.getKey()));
                 }
+
+                int consCount = jsonObj.getAsJsonPrimitive("consumer-count").getAsInt();
+                info.put("consumer-count", String.format("%d", consCount));
 
                 for (Metric metric : consumerMetrics) {
                     metric.setValue(info.get(metric.getKey()));

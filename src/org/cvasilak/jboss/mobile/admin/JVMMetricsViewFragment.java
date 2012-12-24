@@ -32,12 +32,15 @@ import com.actionbarsherlock.app.SherlockListFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
-import org.cvasilak.jboss.mobile.admin.util.commonsware.MergeAdapter;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.cvasilak.jboss.mobile.admin.model.Metric;
 import org.cvasilak.jboss.mobile.admin.net.Callback;
 import org.cvasilak.jboss.mobile.admin.util.MetricsAdapter;
+import org.cvasilak.jboss.mobile.admin.util.commonsware.MergeAdapter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 public class JVMMetricsViewFragment extends SherlockListFragment {
@@ -188,29 +191,84 @@ public class JVMMetricsViewFragment extends SherlockListFragment {
     public void refresh() {
         progress = ProgressDialog.show(getSherlockActivity(), "", getString(R.string.queryingServer));
 
-        application.getOperationsManager().fetchJVMMetrics(new Callback.FetchJVMMetricsCallback() {
+        application.getOperationsManager().fetchJVMMetrics(new Callback() {
             @Override
-            public void onSuccess(Map<String, Map<String, String>> info) {
+            public void onSuccess(JsonElement reply) {
                 progress.dismiss();
 
-                Map<String, String> os = info.get("os");
-                for (Metric metric : osMetrics) {
-                    metric.setValue(os.get(metric.getKey()));
-                }
+                JsonObject jsonObj = reply.getAsJsonObject();
 
-                Map<String, String> heapUsage = info.get("heap-usage");
+                JsonObject step1 = jsonObj.getAsJsonObject("step-1").getAsJsonObject("result");
+
+                /* Memory */
+                long max, committed, init, used;
+                float usedPerc;
+
+                // Heap Usage
+                JsonObject jsonHeapUsage = step1.getAsJsonObject("heap-memory-usage");
+                Map<String, String> heapUsage = new HashMap<String, String>();
+
+                max = jsonHeapUsage.getAsJsonPrimitive("max").getAsLong() / 1024 / 1024;
+                committed = jsonHeapUsage.getAsJsonPrimitive("committed").getAsLong() / 1024 / 1024;
+                init = jsonHeapUsage.getAsJsonPrimitive("init").getAsLong() / 1024 / 1024;
+
+                used = jsonHeapUsage.getAsJsonPrimitive("used").getAsLong() / 1024 / 1024;
+                usedPerc = (max != 0 ? ((float) used / max) * 100 : 0);
+
+                heapUsage.put("max", String.format("%d MB", max));
+                heapUsage.put("used", String.format("%d MB (%.0f%%)", used, usedPerc));
+                heapUsage.put("committed", String.format("%d MB", committed));
+                heapUsage.put("init", String.format("%d MB", init));
+
                 for (Metric metric : heapMetrics) {
                     metric.setValue(heapUsage.get(metric.getKey()));
                 }
 
-                Map<String, String> nonHeapUsage = info.get("nonHeap-usage");
+                // Non Heap Usage
+                JsonObject jsonNonHeapUsage = step1.getAsJsonObject("non-heap-memory-usage");
+                Map<String, String> nonHeapUsage = new HashMap<String, String>();
+
+                max = jsonNonHeapUsage.getAsJsonPrimitive("max").getAsLong() / 1024 / 1024;
+                committed = jsonNonHeapUsage.getAsJsonPrimitive("committed").getAsLong() / 1024 / 1024;
+                init = jsonNonHeapUsage.getAsJsonPrimitive("init").getAsLong() / 1024 / 1024;
+
+                used = jsonNonHeapUsage.getAsJsonPrimitive("used").getAsLong() / 1024 / 1024;
+                usedPerc = (max != 0 ? ((float) used / max) * 100 : 0);
+
+                nonHeapUsage.put("max", String.format("%d MB", max));
+                nonHeapUsage.put("used", String.format("%d MB (%.0f%%)", used, usedPerc));
+                nonHeapUsage.put("committed", String.format("%d MB", committed));
+                nonHeapUsage.put("init", String.format("%d MB", init));
+
                 for (Metric metric : nonHeapMetrics) {
                     metric.setValue(nonHeapUsage.get(metric.getKey()));
                 }
 
-                Map<String, String> threading = info.get("threading");
+                // Threading
+                JsonObject jsonThreading = jsonObj.getAsJsonObject("step-2").getAsJsonObject("result");
+                Map<String, String> threading = new HashMap<String, String>();
+
+                int threadCount = jsonThreading.getAsJsonPrimitive("thread-count").getAsInt();
+                int daemonThreadCount = jsonThreading.getAsJsonPrimitive("daemon-thread-count").getAsInt();
+                float daemonUsedPerc = (threadCount != 0 ? ((float) daemonThreadCount / threadCount) * 100 : 0);
+
+                threading.put("thread-count", String.format("%d", threadCount));
+                threading.put("daemon", String.format("%d (%.0f%%)", daemonThreadCount, daemonUsedPerc));
+
                 for (Metric metric : threadUsageMetrics) {
                     metric.setValue(threading.get(metric.getKey()));
+                }
+
+                // OS
+                JsonObject jsonOS = jsonObj.getAsJsonObject("step-3").getAsJsonObject("result");
+                Map<String, String> os = new HashMap<String, String>();
+
+                os.put("name", jsonOS.get("name").getAsString());
+                os.put("version", jsonOS.get("version").getAsString());
+                os.put("available-processors", jsonOS.get("available-processors").getAsString());
+
+                for (Metric metric : osMetrics) {
+                    metric.setValue(os.get(metric.getKey()));
                 }
 
                 // refresh table

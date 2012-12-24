@@ -32,6 +32,8 @@ import com.actionbarsherlock.app.SherlockListFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.cvasilak.jboss.mobile.admin.model.Metric;
 import org.cvasilak.jboss.mobile.admin.net.Callback;
 import org.cvasilak.jboss.mobile.admin.net.JBossOperationsManager.DataSourceType;
@@ -39,6 +41,7 @@ import org.cvasilak.jboss.mobile.admin.util.MetricsAdapter;
 import org.cvasilak.jboss.mobile.admin.util.commonsware.MergeAdapter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 public class DataSourceMetricsViewFragment extends SherlockListFragment {
@@ -163,14 +166,41 @@ public class DataSourceMetricsViewFragment extends SherlockListFragment {
     public void refresh() {
         progress = ProgressDialog.show(getSherlockActivity(), "", getString(R.string.queryingServer));
 
-        application.getOperationsManager().fetchDataSourceMetrics(this.dsName, this.dsType, new Callback.FetchDataSourceMetricsCallback() {
+        application.getOperationsManager().fetchDataSourceMetrics(this.dsName, this.dsType, new Callback() {
             @Override
-            public void onSuccess(Map<String, String> info) {
+            public void onSuccess(JsonElement reply) {
                 progress.dismiss();
+
+                JsonObject jsonObj = reply.getAsJsonObject();
+
+                Map<String, String> info = new HashMap<String, String>();
+
+                JsonObject jsonPool = jsonObj.getAsJsonObject("step-1").getAsJsonObject("result");
+                int availCount = jsonPool.getAsJsonPrimitive("AvailableCount").getAsInt();
+                int activeCount = jsonPool.getAsJsonPrimitive("ActiveCount").getAsInt();
+                int maxUsedCount = jsonPool.getAsJsonPrimitive("MaxUsedCount").getAsInt();
+
+                float usedPerc = (availCount != 0 ? ((float) activeCount / availCount) * 100 : 0);
+
+                info.put("AvailableCount", String.format("%d", availCount));
+                info.put("ActiveCount", String.format("%d (%.0f%%)", activeCount, usedPerc));
+                info.put("MaxUsedCount", String.format("%d", maxUsedCount));
 
                 for (Metric metric : poolMetrics) {
                     metric.setValue(info.get(metric.getKey()));
                 }
+
+                JsonObject jsonJDBC = jsonObj.getAsJsonObject("step-2").getAsJsonObject("result");
+                int curSize = jsonJDBC.getAsJsonPrimitive("PreparedStatementCacheCurrentSize").getAsInt();
+                int hitCount = jsonJDBC.getAsJsonPrimitive("PreparedStatementCacheHitCount").getAsInt();
+                float hitPerc = (curSize != 0 ? ((float) hitCount / curSize) * 100 : 0);
+
+                int misUsed = jsonJDBC.getAsJsonPrimitive("PreparedStatementCacheMissCount").getAsInt();
+                float misPerc = (curSize != 0 ? ((float) misUsed / curSize) * 100 : 0);
+
+                info.put("PreparedStatementCacheCurrentSize", String.format("%d", curSize));
+                info.put("PreparedStatementCacheHitCount", String.format("%d (%.0f%%)", hitCount, hitPerc));
+                info.put("PreparedStatementCacheMissCount", String.format("%d (%.0f%%)", misUsed, misPerc));
 
                 for (Metric metric : prepStatementMetrics) {
                     metric.setValue(info.get(metric.getKey()));
