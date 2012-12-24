@@ -197,13 +197,12 @@ public class JMSQueueMetricsViewFragment extends SherlockListFragment {
 
                 info.put("message-count", String.format("%d", msgCount));
                 info.put("delivering-count", String.format("%d (%.0f%%)", delivCount, delivPerc));
-                info.put("messages-added", String.format("%d", msgAdded));
-
                 for (Metric metric : inFlightMetrics) {
                     metric.setValue(info.get(metric.getKey()));
                 }
 
                 int schCount = jsonObj.getAsJsonPrimitive("scheduled-count").getAsInt();
+                info.put("messages-added", String.format("%d", msgAdded));
                 info.put("scheduled-count", String.format("%d", schCount));
 
                 for (Metric metric : msgProcessedMetrics) {
