@@ -17,14 +17,11 @@
     <string name="dialog_confirm_delete_title">Confirm Delete</string>
     <string name="dialog_confirm_delete_msg">Are you sure you want delete %1$s?</string>
 
-    <string name="menu_refresh">Refresh</string>
-
     <!--  Shared -->
-    <string name="context_menu_delete">Delete</string>
-    <string name="context_menu_edit">Edit</string>
-
-    <!--  ServersViewActivity -->
-    <string name="menu_add_server">Add</string>
+    <string name="add">Add</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="refresh">Refresh</string>
 
     <!--  RootViewActivity -->
     <string name="tab_runtime">Runtime</string>
@@ -50,7 +47,7 @@
     <string name="dialog_confirm_deployment_title">Confirm Action</string>
     <string name="dialog_confirm_deployment_action">Are you sure you want to %1$s %2$s?</string>
 
-    <!--  HttpRequest -->
+    <!--  ProgressDialog Common Message -->
     <string name="connecting">Connecting, please wait..</string>
     <string name="fetchingDomainInfo">Fetching domain information, please wait..</string>
     <string name="queryingServer">Querying server, please wait..</string>

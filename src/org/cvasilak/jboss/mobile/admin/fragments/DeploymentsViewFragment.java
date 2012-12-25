@@ -123,14 +123,14 @@ public class DeploymentsViewFragment extends SherlockListFragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.refresh_add_menu, menu);
+        inflater.inflate(R.menu.menu_refresh_add, menu);
 
         super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.deployments_context_refresh) {
+        if (item.getItemId() == R.id.refresh) {
             refresh();
 
             return (true);
@@ -149,7 +149,7 @@ public class DeploymentsViewFragment extends SherlockListFragment {
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
             // Inflate a menu resource providing context menu items
-            getSherlockActivity().getSupportMenuInflater().inflate(R.menu.deployments_list_context_menu,
+            getSherlockActivity().getSupportMenuInflater().inflate(R.menu.context_menu_deployments_list,
                     menu);
             return true;
         }

@@ -124,13 +124,13 @@ public class ServersViewActivity extends SherlockListActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getSupportMenuInflater()
-                .inflate(R.menu.servers_list_options_menu, menu);
+                .inflate(R.menu.menu_add, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.context_add) {
+        if (item.getItemId() == R.id.add) {
             startActivity(new Intent(ServersViewActivity.this,
                     ServerDetailActivity.class));
 
@@ -144,7 +144,7 @@ public class ServersViewActivity extends SherlockListActivity {
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
             // Inflate a menu resource providing context menu items
-            getSupportMenuInflater().inflate(R.menu.servers_list_context_menu,
+            getSupportMenuInflater().inflate(R.menu.context_menu_servers_list,
                     menu);
             return true;
         }

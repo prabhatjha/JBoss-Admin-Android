@@ -69,14 +69,14 @@ public class ExtensionsViewFragment extends SherlockListFragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.refresh_menu, menu);
+        inflater.inflate(R.menu.menu_refresh, menu);
 
         super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.context_refresh) {
+        if (item.getItemId() == R.id.refresh) {
             refresh();
 
             return (true);

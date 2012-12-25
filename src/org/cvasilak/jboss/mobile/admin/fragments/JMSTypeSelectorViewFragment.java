@@ -50,7 +50,7 @@ public class JMSTypeSelectorViewFragment extends SherlockListFragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.refresh_menu, menu);
+        inflater.inflate(R.menu.menu_refresh, menu);
 
         super.onCreateOptionsMenu(menu, inflater);
     }
