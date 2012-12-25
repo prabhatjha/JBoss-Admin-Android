@@ -110,6 +110,8 @@ public class WebConnectorTypeSelectorViewFragment extends SherlockListFragment {
             public void onSuccess(JsonElement reply) {
                 progress.dismiss();
 
+                adapter.clear();
+
                 JsonArray jsonArray = reply.getAsJsonArray();
 
                 for (JsonElement entry : jsonArray) {
