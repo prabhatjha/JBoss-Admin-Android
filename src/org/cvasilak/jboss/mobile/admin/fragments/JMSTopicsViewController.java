@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.cvasilak.jboss.mobile.admin;
+package org.cvasilak.jboss.mobile.admin.fragments;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -36,12 +36,14 @@ import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import org.cvasilak.jboss.mobile.admin.JBossAdminApplication;
+import org.cvasilak.jboss.mobile.admin.R;
 import org.cvasilak.jboss.mobile.admin.net.Callback;
 import org.cvasilak.jboss.mobile.admin.net.JBossOperationsManager.JMSType;
 
-public class JMSQueuesViewController extends SherlockListFragment {
+public class JMSTopicsViewController extends SherlockListFragment {
 
-    private static final String TAG = JMSQueuesViewController.class.getSimpleName();
+    private static final String TAG = JMSTopicsViewController.class.getSimpleName();
 
     private JBossAdminApplication application;
 
@@ -89,9 +91,9 @@ public class JMSQueuesViewController extends SherlockListFragment {
 
     @Override
     public void onListItemClick(ListView list, View view, int position, long id) {
-        String queueName = (String) list.getItemAtPosition(position);
+        String topicName = (String) list.getItemAtPosition(position);
 
-        JMSQueueMetricsViewFragment fragment = JMSQueueMetricsViewFragment.newInstance(queueName);
+        JMSTopicMetricsViewFragment fragment = JMSTopicMetricsViewFragment.newInstance(topicName);
 
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
         transaction
@@ -104,7 +106,7 @@ public class JMSQueuesViewController extends SherlockListFragment {
     public void refresh() {
         progress = ProgressDialog.show(getSherlockActivity(), "", getString(R.string.queryingServer));
 
-        application.getOperationsManager().fetchJMSMessagingModelList(JMSType.QUEUE, new Callback() {
+        application.getOperationsManager().fetchJMSMessagingModelList(JMSType.TOPIC, new Callback() {
             @Override
             public void onSuccess(JsonElement reply) {
                 progress.dismiss();

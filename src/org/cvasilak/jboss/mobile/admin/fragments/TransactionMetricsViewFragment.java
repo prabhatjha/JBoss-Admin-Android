@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.cvasilak.jboss.mobile.admin;
+package org.cvasilak.jboss.mobile.admin.fragments;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -34,9 +34,10 @@ import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import org.cvasilak.jboss.mobile.admin.JBossAdminApplication;
+import org.cvasilak.jboss.mobile.admin.R;
 import org.cvasilak.jboss.mobile.admin.model.Metric;
 import org.cvasilak.jboss.mobile.admin.net.Callback;
-import org.cvasilak.jboss.mobile.admin.net.JBossOperationsManager.DataSourceType;
 import org.cvasilak.jboss.mobile.admin.util.MetricsAdapter;
 import org.cvasilak.jboss.mobile.admin.util.commonsware.MergeAdapter;
 
@@ -44,30 +45,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DataSourceMetricsViewFragment extends SherlockListFragment {
+public class TransactionMetricsViewFragment extends SherlockListFragment {
 
-    private static final String TAG = DataSourceMetricsViewFragment.class.getSimpleName();
+    private static final String TAG = TransactionMetricsViewFragment.class.getSimpleName();
 
     private JBossAdminApplication application;
 
     private ProgressDialog progress;
 
-    ArrayList<Metric> poolMetrics;
-    ArrayList<Metric> prepStatementMetrics;
-
-    private String dsName;
-    private DataSourceType dsType;
-
-    public static DataSourceMetricsViewFragment newInstance(String name, DataSourceType type) {
-        DataSourceMetricsViewFragment f = new DataSourceMetricsViewFragment();
-
-        Bundle args = new Bundle();
-        args.putString("dsName", name);
-        args.putString("dsType", type.name());
-        f.setArguments(args);
-
-        return f;
-    }
+    ArrayList<Metric> sucFailMetrics;
+    ArrayList<Metric> failOriginMetrics;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -75,56 +62,53 @@ public class DataSourceMetricsViewFragment extends SherlockListFragment {
 
         Log.d(TAG, "@onCreate()");
 
-        this.dsName = getArguments().getString("dsName");
-        this.dsType = DataSourceType.valueOf(getArguments().getString("dsType"));
-
         application = (JBossAdminApplication) getActivity().getApplication();
 
         // restore state in case of a configuration change (eg orientation)
         if (savedInstanceState != null) {
-            poolMetrics = savedInstanceState.getParcelableArrayList("poolMetrics");
-            prepStatementMetrics = savedInstanceState.getParcelableArrayList("prepStatementMetrics");
+            sucFailMetrics = savedInstanceState.getParcelableArrayList("sucFailMetrics");
+            failOriginMetrics = savedInstanceState.getParcelableArrayList("failOriginMetrics");
         }
 
         MergeAdapter adapter = new MergeAdapter();
 
         TextView sectionHeader;
 
-        // Section: Pool Usage
+        // Section: Success/Failure Ratio
         sectionHeader = new TextView(getActivity());
         sectionHeader.setBackgroundColor(Color.DKGRAY);
         sectionHeader.setPadding(15, 10, 0, 10);
-        sectionHeader.setText("Pool Usage");
+        sectionHeader.setText("Success/Failure Ratio");
         adapter.addView(sectionHeader);
 
-        if (poolMetrics == null) {
-            poolMetrics = new ArrayList<Metric>();
+        if (sucFailMetrics == null) {
+            sucFailMetrics = new ArrayList<Metric>();
 
-            poolMetrics.add(new Metric("Available", "AvailableCount"));
-            poolMetrics.add(new Metric("Active Count", "ActiveCount"));
-            poolMetrics.add(new Metric("Max Used", "MaxUsedCount"));
+            sucFailMetrics.add(new Metric("Total", "number-of-transactions"));
+            sucFailMetrics.add(new Metric("Commited", "number-of-committed-transactions"));
+            sucFailMetrics.add(new Metric("Aborted", "number-of-aborted-transactions"));
+            sucFailMetrics.add(new Metric("Timed Out", "number-of-timed-out-transactions"));
         }
 
-        MetricsAdapter poolMetricsAdapter = new MetricsAdapter(getSherlockActivity(), poolMetrics);
-        adapter.addAdapter(poolMetricsAdapter);
+        MetricsAdapter sucFailMetricsAdapter = new MetricsAdapter(getSherlockActivity(), sucFailMetrics);
+        adapter.addAdapter(sucFailMetricsAdapter);
 
-        // Section: Prepared Statement Pool Usage
+        // Section: Failure Origin
         sectionHeader = new TextView(getActivity());
         sectionHeader.setBackgroundColor(Color.DKGRAY);
         sectionHeader.setPadding(15, 10, 0, 10);
-        sectionHeader.setText("Prepared Statement Pool Usage");
+        sectionHeader.setText("Failure Origin");
         adapter.addView(sectionHeader);
 
-        if (prepStatementMetrics == null) {
-            prepStatementMetrics = new ArrayList<Metric>();
+        if (failOriginMetrics == null) {
+            failOriginMetrics = new ArrayList<Metric>();
 
-            prepStatementMetrics.add(new Metric("Current Size", "PreparedStatementCacheCurrentSize"));
-            prepStatementMetrics.add(new Metric("Hit Count", "PreparedStatementCacheHitCount"));
-            prepStatementMetrics.add(new Metric("Miss Used", "PreparedStatementCacheMissCount"));
+            failOriginMetrics.add(new Metric("Applications", "number-of-application-rollbacks"));
+            failOriginMetrics.add(new Metric("Resources", "number-of-resource-rollbacks"));
         }
 
-        MetricsAdapter prepStatementMetricsAdapter = new MetricsAdapter(getSherlockActivity(), prepStatementMetrics);
-        adapter.addAdapter(prepStatementMetricsAdapter);
+        MetricsAdapter failOriginMetricsAdapter = new MetricsAdapter(getSherlockActivity(), failOriginMetrics);
+        adapter.addAdapter(failOriginMetricsAdapter);
 
         setListAdapter(adapter);
 
@@ -141,8 +125,8 @@ public class DataSourceMetricsViewFragment extends SherlockListFragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        outState.putParcelableArrayList("poolMetrics", poolMetrics);
-        outState.putParcelableArrayList("prepStatementMetrics", prepStatementMetrics);
+        outState.putParcelableArrayList("sucFailMetrics", sucFailMetrics);
+        outState.putParcelableArrayList("failOriginMetrics", failOriginMetrics);
     }
 
     @Override
@@ -166,7 +150,7 @@ public class DataSourceMetricsViewFragment extends SherlockListFragment {
     public void refresh() {
         progress = ProgressDialog.show(getSherlockActivity(), "", getString(R.string.queryingServer));
 
-        application.getOperationsManager().fetchDataSourceMetrics(this.dsName, this.dsType, new Callback() {
+        application.getOperationsManager().fetchTranscationMetrics(new Callback() {
             @Override
             public void onSuccess(JsonElement reply) {
                 progress.dismiss();
@@ -175,34 +159,31 @@ public class DataSourceMetricsViewFragment extends SherlockListFragment {
 
                 Map<String, String> info = new HashMap<String, String>();
 
-                JsonObject jsonPool = jsonObj.getAsJsonObject("step-1").getAsJsonObject("result");
-                int availCount = jsonPool.getAsJsonPrimitive("AvailableCount").getAsInt();
-                int activeCount = jsonPool.getAsJsonPrimitive("ActiveCount").getAsInt();
-                int maxUsedCount = jsonPool.getAsJsonPrimitive("MaxUsedCount").getAsInt();
+                int total = jsonObj.getAsJsonPrimitive("number-of-transactions").getAsInt();
+                int committed = jsonObj.getAsJsonPrimitive("number-of-committed-transactions").getAsInt();
+                float committedPerc = (total != 0 ? ((float) committed / total) * 100 : 0);
 
-                float usedPerc = (availCount != 0 ? ((float) activeCount / availCount) * 100 : 0);
+                int aborted = jsonObj.getAsJsonPrimitive("number-of-aborted-transactions").getAsInt();
+                float abortedPerc = (total != 0 ? ((float) aborted / total) * 100 : 0);
 
-                info.put("AvailableCount", String.format("%d", availCount));
-                info.put("ActiveCount", String.format("%d (%.0f%%)", activeCount, usedPerc));
-                info.put("MaxUsedCount", String.format("%d", maxUsedCount));
+                int timedOut = jsonObj.getAsJsonPrimitive("number-of-timed-out-transactions").getAsInt();
+                float timedOutPerc = (total != 0 ? ((float) timedOut / total) * 100 : 0);
 
-                for (Metric metric : poolMetrics) {
+                int appRollbacks = jsonObj.getAsJsonPrimitive("number-of-application-rollbacks").getAsInt();
+                int resRollbacks = jsonObj.getAsJsonPrimitive("number-of-resource-rollbacks").getAsInt();
+
+                info.put("number-of-transactions", String.format("%d", total));
+                info.put("number-of-committed-transactions", String.format("%d (%.0f%%)", committed, committedPerc));
+                info.put("number-of-aborted-transactions", String.format("%d (%.0f%%)", aborted, abortedPerc));
+                info.put("number-of-timed-out-transactions", String.format("%d (%.0f%%)", timedOut, timedOutPerc));
+                info.put("number-of-application-rollbacks", String.format("%d", appRollbacks));
+                info.put("number-of-resource-rollbacks", String.format("%d", resRollbacks));
+
+                for (Metric metric : sucFailMetrics) {
                     metric.setValue(info.get(metric.getKey()));
                 }
 
-                JsonObject jsonJDBC = jsonObj.getAsJsonObject("step-2").getAsJsonObject("result");
-                int curSize = jsonJDBC.getAsJsonPrimitive("PreparedStatementCacheCurrentSize").getAsInt();
-                int hitCount = jsonJDBC.getAsJsonPrimitive("PreparedStatementCacheHitCount").getAsInt();
-                float hitPerc = (curSize != 0 ? ((float) hitCount / curSize) * 100 : 0);
-
-                int misUsed = jsonJDBC.getAsJsonPrimitive("PreparedStatementCacheMissCount").getAsInt();
-                float misPerc = (curSize != 0 ? ((float) misUsed / curSize) * 100 : 0);
-
-                info.put("PreparedStatementCacheCurrentSize", String.format("%d", curSize));
-                info.put("PreparedStatementCacheHitCount", String.format("%d (%.0f%%)", hitCount, hitPerc));
-                info.put("PreparedStatementCacheMissCount", String.format("%d (%.0f%%)", misUsed, misPerc));
-
-                for (Metric metric : prepStatementMetrics) {
+                for (Metric metric : failOriginMetrics) {
                     metric.setValue(info.get(metric.getKey()));
                 }
 

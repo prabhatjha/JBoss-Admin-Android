@@ -20,40 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.cvasilak.jboss.mobile.admin;
+package org.cvasilak.jboss.mobile.admin.fragments;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.widget.TwoLineListItem;
 import com.actionbarsherlock.app.SherlockListFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import org.cvasilak.jboss.mobile.admin.JBossAdminApplication;
+import org.cvasilak.jboss.mobile.admin.R;
 import org.cvasilak.jboss.mobile.admin.net.Callback;
 
-import java.util.HashMap;
-import java.util.Map;
+public class ExtensionsViewFragment extends SherlockListFragment {
 
-public class DomainServerGroupsFragment extends SherlockListFragment {
-
-    private static final String TAG = JMSQueuesViewController.class.getSimpleName();
+    private static final String TAG = ExtensionsViewFragment.class.getSimpleName();
 
     private JBossAdminApplication application;
 
     private ProgressDialog progress;
 
-    private GroupAdapter adapter;
+    private ArrayAdapter<String> adapter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -63,7 +55,10 @@ public class DomainServerGroupsFragment extends SherlockListFragment {
 
         application = (JBossAdminApplication) getActivity().getApplication();
 
-        adapter = new GroupAdapter();
+        adapter = new ArrayAdapter<String>(
+                getActivity(),
+                android.R.layout.simple_list_item_1);
+
         setListAdapter(adapter);
 
         // inform runtime that we have an action button (refresh)
@@ -90,48 +85,20 @@ public class DomainServerGroupsFragment extends SherlockListFragment {
         return (super.onOptionsItemSelected(item));
     }
 
-    @Override
-    public void onListItemClick(ListView list, View view, int position, long id) {
-        Group group = adapter.getItem(position);
-
-        DeploymentsViewFragment fragment = DeploymentsViewFragment.newInstance(group.name);
-
-        FragmentTransaction transaction = getFragmentManager().beginTransaction();
-        transaction
-                .replace(android.R.id.content, fragment)
-                .addToBackStack(null)
-                .commit();
-
-
-    }
-
     public void refresh() {
         progress = ProgressDialog.show(getSherlockActivity(), "", getString(R.string.queryingServer));
 
-        application.getOperationsManager().fetchDomainGroups(new Callback() {
+        application.getOperationsManager().fetchExtensionsInformation(new Callback() {
             @Override
             public void onSuccess(JsonElement reply) {
                 progress.dismiss();
 
                 adapter.clear();
 
-                JsonObject jsonObj = reply.getAsJsonObject();
+                JsonArray jsonArray = reply.getAsJsonArray();
 
-                String name, profile;
-                boolean hasDeployments = false;
-
-                for (Map.Entry<String, JsonElement> e : jsonObj.entrySet()) {
-                    name = e.getKey();
-
-                    Map<String, String> details = new HashMap<String, String>();
-                    JsonObject detailsJsonObj = e.getValue().getAsJsonObject();
-
-                    if (detailsJsonObj.get("deployment") != null)
-                        hasDeployments = true;
-
-                    profile = detailsJsonObj.get("profile").getAsString();
-
-                    adapter.add(new Group(name, profile, hasDeployments));
+                for (JsonElement entry : jsonArray) {
+                    adapter.add(entry.getAsString());
                 }
             }
 
@@ -151,44 +118,5 @@ public class DomainServerGroupsFragment extends SherlockListFragment {
 
             }
         });
-
     }
-
-    class GroupAdapter extends ArrayAdapter<Group> {
-        GroupAdapter() {
-            super(getSherlockActivity(), android.R.layout.simple_list_item_2);
-        }
-
-        public View getView(int position, View convertView, ViewGroup parent) {
-            TwoLineListItem row;
-
-            if (convertView == null) {
-                LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                row = (TwoLineListItem) inflater.inflate(android.R.layout.simple_list_item_2, null);
-            } else {
-                row = (TwoLineListItem) convertView;
-            }
-
-            Group group = getItem(position);
-
-            row.getText1().setText(group.name);
-            row.getText2().setText(group.profile);
-
-
-            return (row);
-        }
-    }
-
-    class Group {
-        String name;
-        String profile;
-        boolean hasDeployments;
-
-        Group(String name, String profile, boolean hasDeployments) {
-            this.name = name;
-            this.profile = profile;
-            this.hasDeployments = hasDeployments;
-        }
-    }
-
 }

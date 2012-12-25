@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.cvasilak.jboss.mobile.admin;
+package org.cvasilak.jboss.mobile.admin.activities;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -30,6 +30,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import org.cvasilak.jboss.mobile.admin.JBossAdminApplication;
+import org.cvasilak.jboss.mobile.admin.R;
 import org.cvasilak.jboss.mobile.admin.model.Server;
 import org.cvasilak.jboss.mobile.admin.model.ServersManager;
 

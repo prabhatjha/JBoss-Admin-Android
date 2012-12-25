@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.cvasilak.jboss.mobile.admin;
+package org.cvasilak.jboss.mobile.admin.fragments;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -34,9 +34,11 @@ import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import org.cvasilak.jboss.mobile.admin.JBossAdminApplication;
+import org.cvasilak.jboss.mobile.admin.R;
 import org.cvasilak.jboss.mobile.admin.model.Metric;
 import org.cvasilak.jboss.mobile.admin.net.Callback;
-import org.cvasilak.jboss.mobile.admin.net.JBossOperationsManager.JMSType;
+import org.cvasilak.jboss.mobile.admin.net.JBossOperationsManager.DataSourceType;
 import org.cvasilak.jboss.mobile.admin.util.MetricsAdapter;
 import org.cvasilak.jboss.mobile.admin.util.commonsware.MergeAdapter;
 
@@ -44,26 +46,26 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class JMSQueueMetricsViewFragment extends SherlockListFragment {
+public class DataSourceMetricsViewFragment extends SherlockListFragment {
 
-    private static final String TAG = JMSQueueMetricsViewFragment.class.getSimpleName();
+    private static final String TAG = DataSourceMetricsViewFragment.class.getSimpleName();
 
     private JBossAdminApplication application;
 
     private ProgressDialog progress;
 
-    ArrayList<Metric> inFlightMetrics;
-    ArrayList<Metric> msgProcessedMetrics;
-    ArrayList<Metric> consumerMetrics;
+    ArrayList<Metric> poolMetrics;
+    ArrayList<Metric> prepStatementMetrics;
 
-    private String queueName;
+    private String dsName;
+    private DataSourceType dsType;
 
-    public static JMSQueueMetricsViewFragment newInstance(String name) {
-        JMSQueueMetricsViewFragment f = new JMSQueueMetricsViewFragment();
+    public static DataSourceMetricsViewFragment newInstance(String name, DataSourceType type) {
+        DataSourceMetricsViewFragment f = new DataSourceMetricsViewFragment();
 
         Bundle args = new Bundle();
-        args.putString("queueName", name);
-
+        args.putString("dsName", name);
+        args.putString("dsType", type.name());
         f.setArguments(args);
 
         return f;
@@ -75,70 +77,56 @@ public class JMSQueueMetricsViewFragment extends SherlockListFragment {
 
         Log.d(TAG, "@onCreate()");
 
-        this.queueName = getArguments().getString("queueName");
+        this.dsName = getArguments().getString("dsName");
+        this.dsType = DataSourceType.valueOf(getArguments().getString("dsType"));
 
         application = (JBossAdminApplication) getActivity().getApplication();
 
         // restore state in case of a configuration change (eg orientation)
         if (savedInstanceState != null) {
-            inFlightMetrics = savedInstanceState.getParcelableArrayList("inFlightMetrics");
-            msgProcessedMetrics = savedInstanceState.getParcelableArrayList("msgProcessedMetrics");
-            consumerMetrics = savedInstanceState.getParcelableArrayList("consumerMetrics");
+            poolMetrics = savedInstanceState.getParcelableArrayList("poolMetrics");
+            prepStatementMetrics = savedInstanceState.getParcelableArrayList("prepStatementMetrics");
         }
 
         MergeAdapter adapter = new MergeAdapter();
 
         TextView sectionHeader;
 
-        // Section: In-Flight Messages
+        // Section: Pool Usage
         sectionHeader = new TextView(getActivity());
         sectionHeader.setBackgroundColor(Color.DKGRAY);
         sectionHeader.setPadding(15, 10, 0, 10);
-        sectionHeader.setText("In-Flight Messages");
+        sectionHeader.setText("Pool Usage");
         adapter.addView(sectionHeader);
 
-        if (inFlightMetrics == null) {
-            inFlightMetrics = new ArrayList<Metric>();
+        if (poolMetrics == null) {
+            poolMetrics = new ArrayList<Metric>();
 
-            inFlightMetrics.add(new Metric("Messages In Queue", "message-count"));
-            inFlightMetrics.add(new Metric("In Delivery", "delivering-count"));
+            poolMetrics.add(new Metric("Available", "AvailableCount"));
+            poolMetrics.add(new Metric("Active Count", "ActiveCount"));
+            poolMetrics.add(new Metric("Max Used", "MaxUsedCount"));
         }
 
-        MetricsAdapter inFlightMetricsAdapter = new MetricsAdapter(getSherlockActivity(), inFlightMetrics);
-        adapter.addAdapter(inFlightMetricsAdapter);
+        MetricsAdapter poolMetricsAdapter = new MetricsAdapter(getSherlockActivity(), poolMetrics);
+        adapter.addAdapter(poolMetricsAdapter);
 
-        // Section: Messages Processed
+        // Section: Prepared Statement Pool Usage
         sectionHeader = new TextView(getActivity());
         sectionHeader.setBackgroundColor(Color.DKGRAY);
         sectionHeader.setPadding(15, 10, 0, 10);
-        sectionHeader.setText("Messages Processed");
+        sectionHeader.setText("Prepared Statement Pool Usage");
         adapter.addView(sectionHeader);
 
-        if (msgProcessedMetrics == null) {
-            msgProcessedMetrics = new ArrayList<Metric>();
+        if (prepStatementMetrics == null) {
+            prepStatementMetrics = new ArrayList<Metric>();
 
-            msgProcessedMetrics.add(new Metric("Messages Added", "messages-added"));
-            msgProcessedMetrics.add(new Metric("Messages Scheduled", "scheduled-count"));
+            prepStatementMetrics.add(new Metric("Current Size", "PreparedStatementCacheCurrentSize"));
+            prepStatementMetrics.add(new Metric("Hit Count", "PreparedStatementCacheHitCount"));
+            prepStatementMetrics.add(new Metric("Miss Used", "PreparedStatementCacheMissCount"));
         }
 
-        MetricsAdapter msgProcessedMetricsAdapter = new MetricsAdapter(getSherlockActivity(), msgProcessedMetrics);
-        adapter.addAdapter(msgProcessedMetricsAdapter);
-
-        // Section: Consumer
-        sectionHeader = new TextView(getActivity());
-        sectionHeader.setBackgroundColor(Color.DKGRAY);
-        sectionHeader.setPadding(15, 10, 0, 10);
-        sectionHeader.setText("Consumer");
-        adapter.addView(sectionHeader);
-
-        if (consumerMetrics == null) {
-            consumerMetrics = new ArrayList<Metric>();
-
-            consumerMetrics.add(new Metric("Number of Consumer", "consumer-count"));
-        }
-
-        MetricsAdapter consumerMetricsAdapter = new MetricsAdapter(getSherlockActivity(), consumerMetrics);
-        adapter.addAdapter(consumerMetricsAdapter);
+        MetricsAdapter prepStatementMetricsAdapter = new MetricsAdapter(getSherlockActivity(), prepStatementMetrics);
+        adapter.addAdapter(prepStatementMetricsAdapter);
 
         setListAdapter(adapter);
 
@@ -155,9 +143,8 @@ public class JMSQueueMetricsViewFragment extends SherlockListFragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        outState.putParcelableArrayList("inFlightMetrics", inFlightMetrics);
-        outState.putParcelableArrayList("msgProcessedMetrics", msgProcessedMetrics);
-        outState.putParcelableArrayList("consumerMetrics", consumerMetrics);
+        outState.putParcelableArrayList("poolMetrics", poolMetrics);
+        outState.putParcelableArrayList("prepStatementMetrics", prepStatementMetrics);
     }
 
     @Override
@@ -181,7 +168,7 @@ public class JMSQueueMetricsViewFragment extends SherlockListFragment {
     public void refresh() {
         progress = ProgressDialog.show(getSherlockActivity(), "", getString(R.string.queryingServer));
 
-        application.getOperationsManager().fetchJMSQueueMetrics(queueName, JMSType.QUEUE, new Callback() {
+        application.getOperationsManager().fetchDataSourceMetrics(this.dsName, this.dsType, new Callback() {
             @Override
             public void onSuccess(JsonElement reply) {
                 progress.dismiss();
@@ -190,29 +177,34 @@ public class JMSQueueMetricsViewFragment extends SherlockListFragment {
 
                 Map<String, String> info = new HashMap<String, String>();
 
-                int msgCount = jsonObj.getAsJsonPrimitive("message-count").getAsInt();
-                int delivCount = jsonObj.getAsJsonPrimitive("delivering-count").getAsInt();
-                float delivPerc = (msgCount != 0 ? ((float) delivCount / msgCount) * 100 : 0);
-                int msgAdded = jsonObj.getAsJsonPrimitive("messages-added").getAsInt();
+                JsonObject jsonPool = jsonObj.getAsJsonObject("step-1").getAsJsonObject("result");
+                int availCount = jsonPool.getAsJsonPrimitive("AvailableCount").getAsInt();
+                int activeCount = jsonPool.getAsJsonPrimitive("ActiveCount").getAsInt();
+                int maxUsedCount = jsonPool.getAsJsonPrimitive("MaxUsedCount").getAsInt();
 
-                info.put("message-count", String.format("%d", msgCount));
-                info.put("delivering-count", String.format("%d (%.0f%%)", delivCount, delivPerc));
-                for (Metric metric : inFlightMetrics) {
+                float usedPerc = (availCount != 0 ? ((float) activeCount / availCount) * 100 : 0);
+
+                info.put("AvailableCount", String.format("%d", availCount));
+                info.put("ActiveCount", String.format("%d (%.0f%%)", activeCount, usedPerc));
+                info.put("MaxUsedCount", String.format("%d", maxUsedCount));
+
+                for (Metric metric : poolMetrics) {
                     metric.setValue(info.get(metric.getKey()));
                 }
 
-                int schCount = jsonObj.getAsJsonPrimitive("scheduled-count").getAsInt();
-                info.put("messages-added", String.format("%d", msgAdded));
-                info.put("scheduled-count", String.format("%d", schCount));
+                JsonObject jsonJDBC = jsonObj.getAsJsonObject("step-2").getAsJsonObject("result");
+                int curSize = jsonJDBC.getAsJsonPrimitive("PreparedStatementCacheCurrentSize").getAsInt();
+                int hitCount = jsonJDBC.getAsJsonPrimitive("PreparedStatementCacheHitCount").getAsInt();
+                float hitPerc = (curSize != 0 ? ((float) hitCount / curSize) * 100 : 0);
 
-                for (Metric metric : msgProcessedMetrics) {
-                    metric.setValue(info.get(metric.getKey()));
-                }
+                int misUsed = jsonJDBC.getAsJsonPrimitive("PreparedStatementCacheMissCount").getAsInt();
+                float misPerc = (curSize != 0 ? ((float) misUsed / curSize) * 100 : 0);
 
-                int consCount = jsonObj.getAsJsonPrimitive("consumer-count").getAsInt();
-                info.put("consumer-count", String.format("%d", consCount));
+                info.put("PreparedStatementCacheCurrentSize", String.format("%d", curSize));
+                info.put("PreparedStatementCacheHitCount", String.format("%d (%.0f%%)", hitCount, hitPerc));
+                info.put("PreparedStatementCacheMissCount", String.format("%d (%.0f%%)", misUsed, misPerc));
 
-                for (Metric metric : consumerMetrics) {
+                for (Metric metric : prepStatementMetrics) {
                     metric.setValue(info.get(metric.getKey()));
                 }
 

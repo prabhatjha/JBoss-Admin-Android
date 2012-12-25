@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.cvasilak.jboss.mobile.admin;
+package org.cvasilak.jboss.mobile.admin.fragments;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -34,6 +34,8 @@ import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import org.cvasilak.jboss.mobile.admin.JBossAdminApplication;
+import org.cvasilak.jboss.mobile.admin.R;
 import org.cvasilak.jboss.mobile.admin.model.Metric;
 import org.cvasilak.jboss.mobile.admin.net.Callback;
 import org.cvasilak.jboss.mobile.admin.util.MetricsAdapter;
@@ -43,16 +45,29 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TransactionMetricsViewFragment extends SherlockListFragment {
+public class WebConnectorMetricsViewFragment extends SherlockListFragment {
 
-    private static final String TAG = TransactionMetricsViewFragment.class.getSimpleName();
+    private static final String TAG = WebConnectorMetricsViewFragment.class.getSimpleName();
 
     private JBossAdminApplication application;
 
     private ProgressDialog progress;
 
-    ArrayList<Metric> sucFailMetrics;
-    ArrayList<Metric> failOriginMetrics;
+    ArrayList<Metric> generalMetrics;
+    ArrayList<Metric> reqPerConnectorMetrics;
+
+    private String connectorName;
+
+    public static WebConnectorMetricsViewFragment newInstance(String name) {
+        WebConnectorMetricsViewFragment f = new WebConnectorMetricsViewFragment();
+
+        Bundle args = new Bundle();
+        args.putString("connectorName", name);
+
+        f.setArguments(args);
+
+        return f;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -60,53 +75,56 @@ public class TransactionMetricsViewFragment extends SherlockListFragment {
 
         Log.d(TAG, "@onCreate()");
 
+        this.connectorName = getArguments().getString("connectorName");
+
         application = (JBossAdminApplication) getActivity().getApplication();
 
         // restore state in case of a configuration change (eg orientation)
         if (savedInstanceState != null) {
-            sucFailMetrics = savedInstanceState.getParcelableArrayList("sucFailMetrics");
-            failOriginMetrics = savedInstanceState.getParcelableArrayList("failOriginMetrics");
+            generalMetrics = savedInstanceState.getParcelableArrayList("generalMetrics");
+            reqPerConnectorMetrics = savedInstanceState.getParcelableArrayList("reqPerConnectorMetrics");
         }
 
         MergeAdapter adapter = new MergeAdapter();
 
         TextView sectionHeader;
 
-        // Section: Success/Failure Ratio
+        // Section: General
         sectionHeader = new TextView(getActivity());
         sectionHeader.setBackgroundColor(Color.DKGRAY);
         sectionHeader.setPadding(15, 10, 0, 10);
-        sectionHeader.setText("Success/Failure Ratio");
+        sectionHeader.setText("General");
         adapter.addView(sectionHeader);
 
-        if (sucFailMetrics == null) {
-            sucFailMetrics = new ArrayList<Metric>();
+        if (generalMetrics == null) {
+            generalMetrics = new ArrayList<Metric>();
 
-            sucFailMetrics.add(new Metric("Total", "number-of-transactions"));
-            sucFailMetrics.add(new Metric("Commited", "number-of-committed-transactions"));
-            sucFailMetrics.add(new Metric("Aborted", "number-of-aborted-transactions"));
-            sucFailMetrics.add(new Metric("Timed Out", "number-of-timed-out-transactions"));
+            generalMetrics.add(new Metric("Protocol", "protocol"));
+            generalMetrics.add(new Metric("Bytes Sent", "bytesSent"));
+            generalMetrics.add(new Metric("Bytes Received", "bytesReceived"));
         }
 
-        MetricsAdapter sucFailMetricsAdapter = new MetricsAdapter(getSherlockActivity(), sucFailMetrics);
-        adapter.addAdapter(sucFailMetricsAdapter);
+        MetricsAdapter generalMetricsAdapter = new MetricsAdapter(getSherlockActivity(), generalMetrics);
+        adapter.addAdapter(generalMetricsAdapter);
 
-        // Section: Failure Origin
+        // Section: Request per Connector
         sectionHeader = new TextView(getActivity());
         sectionHeader.setBackgroundColor(Color.DKGRAY);
         sectionHeader.setPadding(15, 10, 0, 10);
-        sectionHeader.setText("Failure Origin");
+        sectionHeader.setText("Request per Connector");
         adapter.addView(sectionHeader);
 
-        if (failOriginMetrics == null) {
-            failOriginMetrics = new ArrayList<Metric>();
+        if (reqPerConnectorMetrics == null) {
+            reqPerConnectorMetrics = new ArrayList<Metric>();
 
-            failOriginMetrics.add(new Metric("Applications", "number-of-application-rollbacks"));
-            failOriginMetrics.add(new Metric("Resources", "number-of-resource-rollbacks"));
+            reqPerConnectorMetrics.add(new Metric("Request Count", "requestCount"));
+            reqPerConnectorMetrics.add(new Metric("Error Count", "errorCount"));
+            reqPerConnectorMetrics.add(new Metric("Processing Time (ms)", "processingTime"));
+            reqPerConnectorMetrics.add(new Metric("Max Time (ms)", "maxTime"));
         }
 
-        MetricsAdapter failOriginMetricsAdapter = new MetricsAdapter(getSherlockActivity(), failOriginMetrics);
-        adapter.addAdapter(failOriginMetricsAdapter);
+        MetricsAdapter reqPerConnectorMetricsAdapter = new MetricsAdapter(getSherlockActivity(), reqPerConnectorMetrics);
+        adapter.addAdapter(reqPerConnectorMetricsAdapter);
 
         setListAdapter(adapter);
 
@@ -123,8 +141,8 @@ public class TransactionMetricsViewFragment extends SherlockListFragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        outState.putParcelableArrayList("sucFailMetrics", sucFailMetrics);
-        outState.putParcelableArrayList("failOriginMetrics", failOriginMetrics);
+        outState.putParcelableArrayList("generalMetrics", generalMetrics);
+        outState.putParcelableArrayList("reqPerConnectorMetrics", reqPerConnectorMetrics);
     }
 
     @Override
@@ -148,7 +166,7 @@ public class TransactionMetricsViewFragment extends SherlockListFragment {
     public void refresh() {
         progress = ProgressDialog.show(getSherlockActivity(), "", getString(R.string.queryingServer));
 
-        application.getOperationsManager().fetchTranscationMetrics(new Callback() {
+        application.getOperationsManager().fetchWebConnectorMetrics(connectorName, new Callback() {
             @Override
             public void onSuccess(JsonElement reply) {
                 progress.dismiss();
@@ -157,31 +175,29 @@ public class TransactionMetricsViewFragment extends SherlockListFragment {
 
                 Map<String, String> info = new HashMap<String, String>();
 
-                int total = jsonObj.getAsJsonPrimitive("number-of-transactions").getAsInt();
-                int committed = jsonObj.getAsJsonPrimitive("number-of-committed-transactions").getAsInt();
-                float committedPerc = (total != 0 ? ((float) committed / total) * 100 : 0);
+                long bytesSent = jsonObj.getAsJsonPrimitive("bytesSent").getAsLong();
+                long bytesReceived = jsonObj.getAsJsonPrimitive("bytesReceived").getAsLong();
 
-                int aborted = jsonObj.getAsJsonPrimitive("number-of-aborted-transactions").getAsInt();
-                float abortedPerc = (total != 0 ? ((float) aborted / total) * 100 : 0);
+                info.put("bytesSent", String.format("%d", bytesSent));
+                info.put("bytesReceived", String.format("%d", bytesReceived));
+                info.put("protocol", jsonObj.get("protocol").getAsString());
 
-                int timedOut = jsonObj.getAsJsonPrimitive("number-of-timed-out-transactions").getAsInt();
-                float timedOutPerc = (total != 0 ? ((float) timedOut / total) * 100 : 0);
-
-                int appRollbacks = jsonObj.getAsJsonPrimitive("number-of-application-rollbacks").getAsInt();
-                int resRollbacks = jsonObj.getAsJsonPrimitive("number-of-resource-rollbacks").getAsInt();
-
-                info.put("number-of-transactions", String.format("%d", total));
-                info.put("number-of-committed-transactions", String.format("%d (%.0f%%)", committed, committedPerc));
-                info.put("number-of-aborted-transactions", String.format("%d (%.0f%%)", aborted, abortedPerc));
-                info.put("number-of-timed-out-transactions", String.format("%d (%.0f%%)", timedOut, timedOutPerc));
-                info.put("number-of-application-rollbacks", String.format("%d", appRollbacks));
-                info.put("number-of-resource-rollbacks", String.format("%d", resRollbacks));
-
-                for (Metric metric : sucFailMetrics) {
+                for (Metric metric : generalMetrics) {
                     metric.setValue(info.get(metric.getKey()));
                 }
 
-                for (Metric metric : failOriginMetrics) {
+                int requestCount = jsonObj.getAsJsonPrimitive("requestCount").getAsInt();
+                int errorCount = jsonObj.getAsJsonPrimitive("errorCount").getAsInt();
+                float errorPerc = (requestCount != 0 ? ((float) errorCount / requestCount) * 100 : 0);
+                int processingTime = jsonObj.getAsJsonPrimitive("processingTime").getAsInt();
+                int maxTime = jsonObj.getAsJsonPrimitive("maxTime").getAsInt();
+
+                info.put("requestCount", String.format("%d", requestCount));
+                info.put("errorCount", String.format("%d (%.0f%%)", errorCount, errorPerc));
+                info.put("processingTime", String.format("%d", processingTime));
+                info.put("maxTime", String.format("%d", maxTime));
+
+                for (Metric metric : reqPerConnectorMetrics) {
                     metric.setValue(info.get(metric.getKey()));
                 }
 

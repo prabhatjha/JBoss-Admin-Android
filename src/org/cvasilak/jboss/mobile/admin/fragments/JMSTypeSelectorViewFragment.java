@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.cvasilak.jboss.mobile.admin;
+package org.cvasilak.jboss.mobile.admin.fragments;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -31,6 +31,7 @@ import android.widget.ListView;
 import com.actionbarsherlock.app.SherlockListFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
+import org.cvasilak.jboss.mobile.admin.R;
 
 public class JMSTypeSelectorViewFragment extends SherlockListFragment {
 

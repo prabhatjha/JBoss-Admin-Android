@@ -15,7 +15,7 @@
             android:name="JBossAdminApplication">
 
         <activity
-                android:name="ServersViewActivity"
+                android:name=".activities.ServersViewActivity"
                 android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -23,8 +23,8 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="ServerDetailActivity"/>
-        <activity android:name="RootViewActivity"/>
+        <activity android:name=".activities.ServerDetailActivity"/>
+        <activity android:name=".activities.RootViewActivity"/>
     </application>
 
 </manifest>

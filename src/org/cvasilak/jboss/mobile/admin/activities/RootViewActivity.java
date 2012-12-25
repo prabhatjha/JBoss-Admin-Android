@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.cvasilak.jboss.mobile.admin;
+package org.cvasilak.jboss.mobile.admin.activities;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -28,6 +28,9 @@ import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import org.cvasilak.jboss.mobile.admin.R;
+import org.cvasilak.jboss.mobile.admin.fragments.ProfileViewFragment;
+import org.cvasilak.jboss.mobile.admin.fragments.RuntimeViewFragment;
 
 public class RootViewActivity extends SherlockFragmentActivity {
 

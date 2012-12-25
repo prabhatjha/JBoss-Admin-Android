@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.cvasilak.jboss.mobile.admin;
+package org.cvasilak.jboss.mobile.admin.fragments;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -34,6 +34,8 @@ import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import org.cvasilak.jboss.mobile.admin.JBossAdminApplication;
+import org.cvasilak.jboss.mobile.admin.R;
 import org.cvasilak.jboss.mobile.admin.model.Metric;
 import org.cvasilak.jboss.mobile.admin.net.Callback;
 import org.cvasilak.jboss.mobile.admin.net.JBossOperationsManager.JMSType;
@@ -44,9 +46,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class JMSTopicMetricsViewFragment extends SherlockListFragment {
+public class JMSQueueMetricsViewFragment extends SherlockListFragment {
 
-    private static final String TAG = JMSTopicMetricsViewFragment.class.getSimpleName();
+    private static final String TAG = JMSQueueMetricsViewFragment.class.getSimpleName();
 
     private JBossAdminApplication application;
 
@@ -54,15 +56,15 @@ public class JMSTopicMetricsViewFragment extends SherlockListFragment {
 
     ArrayList<Metric> inFlightMetrics;
     ArrayList<Metric> msgProcessedMetrics;
-    ArrayList<Metric> subscriptionMetrics;
+    ArrayList<Metric> consumerMetrics;
 
-    private String topicName;
+    private String queueName;
 
-    public static JMSTopicMetricsViewFragment newInstance(String name) {
-        JMSTopicMetricsViewFragment f = new JMSTopicMetricsViewFragment();
+    public static JMSQueueMetricsViewFragment newInstance(String name) {
+        JMSQueueMetricsViewFragment f = new JMSQueueMetricsViewFragment();
 
         Bundle args = new Bundle();
-        args.putString("topicName", name);
+        args.putString("queueName", name);
 
         f.setArguments(args);
 
@@ -75,7 +77,7 @@ public class JMSTopicMetricsViewFragment extends SherlockListFragment {
 
         Log.d(TAG, "@onCreate()");
 
-        this.topicName = getArguments().getString("topicName");
+        this.queueName = getArguments().getString("queueName");
 
         application = (JBossAdminApplication) getActivity().getApplication();
 
@@ -83,7 +85,7 @@ public class JMSTopicMetricsViewFragment extends SherlockListFragment {
         if (savedInstanceState != null) {
             inFlightMetrics = savedInstanceState.getParcelableArrayList("inFlightMetrics");
             msgProcessedMetrics = savedInstanceState.getParcelableArrayList("msgProcessedMetrics");
-            subscriptionMetrics = savedInstanceState.getParcelableArrayList("subscriptionMetrics");
+            consumerMetrics = savedInstanceState.getParcelableArrayList("consumerMetrics");
         }
 
         MergeAdapter adapter = new MergeAdapter();
@@ -100,7 +102,7 @@ public class JMSTopicMetricsViewFragment extends SherlockListFragment {
         if (inFlightMetrics == null) {
             inFlightMetrics = new ArrayList<Metric>();
 
-            inFlightMetrics.add(new Metric("Messages In Topic", "message-count"));
+            inFlightMetrics.add(new Metric("Messages In Queue", "message-count"));
             inFlightMetrics.add(new Metric("In Delivery", "delivering-count"));
         }
 
@@ -118,8 +120,7 @@ public class JMSTopicMetricsViewFragment extends SherlockListFragment {
             msgProcessedMetrics = new ArrayList<Metric>();
 
             msgProcessedMetrics.add(new Metric("Messages Added", "messages-added"));
-            msgProcessedMetrics.add(new Metric("Durable Messages", "durable-message-count"));
-            msgProcessedMetrics.add(new Metric("NoN-Durable Messages", "non-durable-message-count"));
+            msgProcessedMetrics.add(new Metric("Messages Scheduled", "scheduled-count"));
         }
 
         MetricsAdapter msgProcessedMetricsAdapter = new MetricsAdapter(getSherlockActivity(), msgProcessedMetrics);
@@ -129,19 +130,17 @@ public class JMSTopicMetricsViewFragment extends SherlockListFragment {
         sectionHeader = new TextView(getActivity());
         sectionHeader.setBackgroundColor(Color.DKGRAY);
         sectionHeader.setPadding(15, 10, 0, 10);
-        sectionHeader.setText("Subscriptions");
+        sectionHeader.setText("Consumer");
         adapter.addView(sectionHeader);
 
-        if (subscriptionMetrics == null) {
-            subscriptionMetrics = new ArrayList<Metric>();
+        if (consumerMetrics == null) {
+            consumerMetrics = new ArrayList<Metric>();
 
-            subscriptionMetrics.add(new Metric("Number of Subscriptions", "subscription-count"));
-            subscriptionMetrics.add(new Metric("Durable Subscribers", "durable-subscription-count"));
-            subscriptionMetrics.add(new Metric("Non-Durable Subscribers", "non-durable-subscription-count"));
+            consumerMetrics.add(new Metric("Number of Consumer", "consumer-count"));
         }
 
-        MetricsAdapter subscriptionerMetricsAdapter = new MetricsAdapter(getSherlockActivity(), subscriptionMetrics);
-        adapter.addAdapter(subscriptionerMetricsAdapter);
+        MetricsAdapter consumerMetricsAdapter = new MetricsAdapter(getSherlockActivity(), consumerMetrics);
+        adapter.addAdapter(consumerMetricsAdapter);
 
         setListAdapter(adapter);
 
@@ -160,7 +159,7 @@ public class JMSTopicMetricsViewFragment extends SherlockListFragment {
 
         outState.putParcelableArrayList("inFlightMetrics", inFlightMetrics);
         outState.putParcelableArrayList("msgProcessedMetrics", msgProcessedMetrics);
-        outState.putParcelableArrayList("subscriptionMetrics", subscriptionMetrics);
+        outState.putParcelableArrayList("consumerMetrics", consumerMetrics);
     }
 
     @Override
@@ -184,7 +183,7 @@ public class JMSTopicMetricsViewFragment extends SherlockListFragment {
     public void refresh() {
         progress = ProgressDialog.show(getSherlockActivity(), "", getString(R.string.queryingServer));
 
-        application.getOperationsManager().fetchJMSQueueMetrics(topicName, JMSType.TOPIC, new Callback() {
+        application.getOperationsManager().fetchJMSQueueMetrics(queueName, JMSType.QUEUE, new Callback() {
             @Override
             public void onSuccess(JsonElement reply) {
                 progress.dismiss();
@@ -193,7 +192,6 @@ public class JMSTopicMetricsViewFragment extends SherlockListFragment {
 
                 Map<String, String> info = new HashMap<String, String>();
 
-                // common metrics
                 int msgCount = jsonObj.getAsJsonPrimitive("message-count").getAsInt();
                 int delivCount = jsonObj.getAsJsonPrimitive("delivering-count").getAsInt();
                 float delivPerc = (msgCount != 0 ? ((float) delivCount / msgCount) * 100 : 0);
@@ -201,33 +199,22 @@ public class JMSTopicMetricsViewFragment extends SherlockListFragment {
 
                 info.put("message-count", String.format("%d", msgCount));
                 info.put("delivering-count", String.format("%d (%.0f%%)", delivCount, delivPerc));
-                info.put("messages-added", String.format("%d", msgAdded));
-
                 for (Metric metric : inFlightMetrics) {
                     metric.setValue(info.get(metric.getKey()));
                 }
 
-                int durCount = jsonObj.getAsJsonPrimitive("durable-message-count").getAsInt();
-                float durPerc = (msgAdded != 0 ? ((float) durCount / msgAdded) * 100 : 0);
-
-                int nonDurCount = jsonObj.getAsJsonPrimitive("non-durable-message-count").getAsInt();
-                float nonDurPerc = (msgAdded != 0 ? ((float) nonDurCount / msgAdded) * 100 : 0);
-
-                int subCount = jsonObj.getAsJsonPrimitive("subscription-count").getAsInt();
-                int durSubCount = jsonObj.getAsJsonPrimitive("durable-subscription-count").getAsInt();
-                int nonDurSubCount = jsonObj.getAsJsonPrimitive("non-durable-subscription-count").getAsInt();
-
-                info.put("durable-message-count", String.format("%d (%.0f%%)", durCount, durPerc));
-                info.put("non-durable-message-count", String.format("%d (%.0f%%)", nonDurCount, nonDurPerc));
-                info.put("subscription-count", String.format("%d", subCount));
-                info.put("durable-subscription-count", String.format("%d", durSubCount));
-                info.put("non-durable-subscription-count", String.format("%d", nonDurSubCount));
+                int schCount = jsonObj.getAsJsonPrimitive("scheduled-count").getAsInt();
+                info.put("messages-added", String.format("%d", msgAdded));
+                info.put("scheduled-count", String.format("%d", schCount));
 
                 for (Metric metric : msgProcessedMetrics) {
                     metric.setValue(info.get(metric.getKey()));
                 }
 
-                for (Metric metric : subscriptionMetrics) {
+                int consCount = jsonObj.getAsJsonPrimitive("consumer-count").getAsInt();
+                info.put("consumer-count", String.format("%d", consCount));
+
+                for (Metric metric : consumerMetrics) {
                     metric.setValue(info.get(metric.getKey()));
                 }
 

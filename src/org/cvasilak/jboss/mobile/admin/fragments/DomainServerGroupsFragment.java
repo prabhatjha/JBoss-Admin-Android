@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.cvasilak.jboss.mobile.admin;
+package org.cvasilak.jboss.mobile.admin.fragments;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -32,28 +32,30 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.TwoLineListItem;
 import com.actionbarsherlock.app.SherlockListFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import org.cvasilak.jboss.mobile.admin.JBossAdminApplication;
+import org.cvasilak.jboss.mobile.admin.R;
 import org.cvasilak.jboss.mobile.admin.net.Callback;
-import org.cvasilak.jboss.mobile.admin.net.JBossOperationsManager.DataSourceType;
 
-public class DataSourcesViewFragment extends SherlockListFragment {
+import java.util.HashMap;
+import java.util.Map;
 
-    private static final String TAG = DataSourcesViewFragment.class.getSimpleName();
+public class DomainServerGroupsFragment extends SherlockListFragment {
+
+    private static final String TAG = JMSQueuesViewController.class.getSimpleName();
 
     private JBossAdminApplication application;
 
     private ProgressDialog progress;
 
-    private DataSourceAdapter adapter;
+    private GroupAdapter adapter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -63,7 +65,7 @@ public class DataSourcesViewFragment extends SherlockListFragment {
 
         application = (JBossAdminApplication) getActivity().getApplication();
 
-        adapter = new DataSourceAdapter();
+        adapter = new GroupAdapter();
         setListAdapter(adapter);
 
         // inform runtime that we have an action button (refresh)
@@ -92,22 +94,23 @@ public class DataSourcesViewFragment extends SherlockListFragment {
 
     @Override
     public void onListItemClick(ListView list, View view, int position, long id) {
-        DataSource selectedDS = adapter.getItem(position);
-        DataSourceMetricsViewFragment dsMetrics = DataSourceMetricsViewFragment.newInstance(selectedDS.name, selectedDS.type);
+        Group group = adapter.getItem(position);
+
+        DeploymentsViewFragment fragment = DeploymentsViewFragment.newInstance(group.name);
 
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
-
         transaction
-                .replace(android.R.id.content, dsMetrics)
+                .replace(android.R.id.content, fragment)
                 .addToBackStack(null)
                 .commit();
+
 
     }
 
     public void refresh() {
         progress = ProgressDialog.show(getSherlockActivity(), "", getString(R.string.queryingServer));
 
-        application.getOperationsManager().fetchDataSourceList(new Callback() {
+        application.getOperationsManager().fetchDomainGroups(new Callback() {
             @Override
             public void onSuccess(JsonElement reply) {
                 progress.dismiss();
@@ -116,14 +119,21 @@ public class DataSourcesViewFragment extends SherlockListFragment {
 
                 JsonObject jsonObj = reply.getAsJsonObject();
 
-                JsonArray jsonDsList = jsonObj.getAsJsonObject("step-1").getAsJsonArray("result");
-                for (JsonElement ds : jsonDsList) {
-                    adapter.add(new DataSource(ds.getAsString(), DataSourceType.StandardDataSource));
-                }
+                String name, profile;
+                boolean hasDeployments = false;
 
-                JsonArray jsonXADsList = jsonObj.getAsJsonObject("step-2").getAsJsonArray("result");
-                for (JsonElement ds : jsonXADsList) {
-                    adapter.add(new DataSource(ds.getAsString(), DataSourceType.XADataSource));
+                for (Map.Entry<String, JsonElement> e : jsonObj.entrySet()) {
+                    name = e.getKey();
+
+                    Map<String, String> details = new HashMap<String, String>();
+                    JsonObject detailsJsonObj = e.getValue().getAsJsonObject();
+
+                    if (detailsJsonObj.get("deployment") != null)
+                        hasDeployments = true;
+
+                    profile = detailsJsonObj.get("profile").getAsString();
+
+                    adapter.add(new Group(name, profile, hasDeployments));
                 }
             }
 
@@ -143,58 +153,44 @@ public class DataSourcesViewFragment extends SherlockListFragment {
 
             }
         });
+
     }
 
-    class DataSourceAdapter extends ArrayAdapter<DataSource> {
-        DataSourceAdapter() {
-            super(getSherlockActivity(), R.layout.datasource_row);
+    class GroupAdapter extends ArrayAdapter<Group> {
+        GroupAdapter() {
+            super(getSherlockActivity(), android.R.layout.simple_list_item_2);
         }
 
-        @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            View row = convertView;
-            DataSourceHolder holder;
+            TwoLineListItem row;
 
-            if (row == null) {
+            if (convertView == null) {
                 LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
-                row = inflater.inflate(R.layout.datasource_row, parent, false);
-                holder = new DataSourceHolder(row);
-                row.setTag(holder);
-
+                row = (TwoLineListItem) inflater.inflate(android.R.layout.simple_list_item_2, null);
             } else {
-                holder = (DataSourceHolder) row.getTag();
+                row = (TwoLineListItem) convertView;
             }
 
-            holder.populateFrom(getItem(position));
+            Group group = getItem(position);
+
+            row.getText1().setText(group.name);
+            row.getText2().setText(group.profile);
+
 
             return (row);
         }
     }
 
-    static class DataSourceHolder {
-        ImageView icon = null;
-        TextView name = null;
-
-        DataSourceHolder(View row) {
-            this.icon = (ImageView) row.findViewById(R.id.datasource_icon);
-            this.name = (TextView) row.findViewById(R.id.datasource_name);
-        }
-
-        void populateFrom(DataSource ds) {
-            name.setText(ds.name);
-            // check and set the XA icon to distinqush XA Data sources
-            icon.setImageResource((ds.type == DataSourceType.XADataSource ? R.drawable.ic_xa_ds : 0));
-        }
-    }
-
-    class DataSource {
+    class Group {
         String name;
-        DataSourceType type;
+        String profile;
+        boolean hasDeployments;
 
-        DataSource(String name, DataSourceType type) {
+        Group(String name, String profile, boolean hasDeployments) {
             this.name = name;
-            this.type = type;
+            this.profile = profile;
+            this.hasDeployments = hasDeployments;
         }
     }
+
 }
