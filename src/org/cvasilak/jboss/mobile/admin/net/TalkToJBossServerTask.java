@@ -102,7 +102,6 @@ public class TalkToJBossServerTask extends AsyncTask<ParametersMap, Void, JsonEl
             HttpPost httpRequest = new HttpPost(server.getHostPort() + "/management");
             httpRequest.setEntity(entity);
 
-            Log.d(TAG, "fetching " + httpRequest.getURI());
             Log.d(TAG, "--------> " + json);
 
             HttpResponse serverResponse = client.execute(httpRequest);
