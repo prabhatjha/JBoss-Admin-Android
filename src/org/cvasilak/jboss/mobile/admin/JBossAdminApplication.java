@@ -45,7 +45,10 @@ public class JBossAdminApplication extends Application {
 
         Log.d(TAG, "@onCreate()");
 
-        gjson = new GsonBuilder().setPrettyPrinting().create();
+        gjson = new GsonBuilder()
+                .setPrettyPrinting()
+                .disableHtmlEscaping()
+                .create();
 
         serversManager = new ServersManager(getApplicationContext());
         try {
