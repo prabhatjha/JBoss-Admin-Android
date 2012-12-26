@@ -103,8 +103,6 @@ public class DomainServerGroupsFragment extends SherlockListFragment {
                 .replace(android.R.id.content, fragment)
                 .addToBackStack(null)
                 .commit();
-
-
     }
 
     public void refresh() {
@@ -175,7 +173,6 @@ public class DomainServerGroupsFragment extends SherlockListFragment {
 
             row.getText1().setText(group.name);
             row.getText2().setText(group.profile);
-
 
             return (row);
         }
