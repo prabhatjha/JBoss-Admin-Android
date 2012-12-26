@@ -27,6 +27,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,6 +42,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.cvasilak.jboss.mobile.admin.JBossAdminApplication;
 import org.cvasilak.jboss.mobile.admin.R;
+import org.cvasilak.jboss.mobile.admin.model.Deployment;
 import org.cvasilak.jboss.mobile.admin.net.Callback;
 
 import java.util.Map;
@@ -118,6 +120,13 @@ public class DeploymentsViewFragment extends SherlockListFragment {
             }
         });
 
+        //refresh();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
         refresh();
     }
 
@@ -132,6 +141,18 @@ public class DeploymentsViewFragment extends SherlockListFragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.refresh) {
             refresh();
+
+            return (true);
+
+        } else if (item.getItemId() == R.id.add) {
+
+            AddServerGroupDeploymentViewFragment fragment = AddServerGroupDeploymentViewFragment.newInstance(group, true);
+
+            FragmentTransaction transaction = getFragmentManager().beginTransaction();
+            transaction
+                    .replace(android.R.id.content, fragment)
+                    .addToBackStack(null)
+                    .commit();
 
             return (true);
         }
@@ -158,9 +179,9 @@ public class DeploymentsViewFragment extends SherlockListFragment {
         public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
             MenuItem item = menu.findItem(R.id.deployments_context_action);
 
-            final Deployment deployment = adapter.getItem(selectedItemPos);
+            Deployment deployment = adapter.getItem(selectedItemPos);
 
-            item.setTitle(deployment.enabled ? R.string.disable : R.string.enable);
+            item.setTitle(deployment.isEnabled() ? R.string.disable : R.string.enable);
 
             return true;
         }
@@ -177,7 +198,7 @@ public class DeploymentsViewFragment extends SherlockListFragment {
                     alertDialog
                             .setTitle(getString(R.string.dialog_confirm_delete_title))
                             .setMessage(String.format(getString(R.string.dialog_confirm_delete_msg),
-                                    deployment.name))
+                                    deployment.getName()))
                             .setIcon(R.drawable.ic_action_delete)
                             .setNegativeButton(getString(R.string.dialog_button_NO),
                                     null)
@@ -187,7 +208,7 @@ public class DeploymentsViewFragment extends SherlockListFragment {
                                                             int which) {
                                             progress = ProgressDialog.show(getSherlockActivity(), "", getString(R.string.queryingServer));
 
-                                            application.getOperationsManager().removeDeployment(deployment.name, group, new Callback() {
+                                            application.getOperationsManager().removeDeployment(deployment.getName(), group, new Callback() {
                                                 @Override
                                                 public void onSuccess(JsonElement reply) {
                                                     progress.dismiss();
@@ -217,11 +238,12 @@ public class DeploymentsViewFragment extends SherlockListFragment {
                     mActionMode.finish();
 
                     return true;
+
                 case R.id.deployments_context_action:
                     alertDialog
                             .setTitle(getString(R.string.dialog_confirm_deployment_title))
                             .setMessage(String.format(getString(R.string.dialog_confirm_deployment_action),
-                                    deployment.enabled ? "disable" : "enable", deployment.name))
+                                    deployment.isEnabled() ? "disable" : "enable", deployment.getName()))
                             .setNegativeButton(getString(R.string.dialog_button_NO),
                                     null)
                             .setPositiveButton(getString(R.string.dialog_button_YES),
@@ -230,12 +252,12 @@ public class DeploymentsViewFragment extends SherlockListFragment {
                                                             int which) {
                                             progress = ProgressDialog.show(getSherlockActivity(), "", getString(R.string.applyingAction));
 
-                                            application.getOperationsManager().changeDeploymentStatus(deployment.name, group, !deployment.enabled, new Callback() {
+                                            application.getOperationsManager().changeDeploymentStatus(deployment.getName(), group, !deployment.isEnabled(), new Callback() {
                                                 @Override
                                                 public void onSuccess(JsonElement reply) {
                                                     progress.dismiss();
 
-                                                    deployment.enabled = !deployment.enabled;
+                                                    deployment.setEnabled(!deployment.isEnabled());
 
                                                     adapter.notifyDataSetChanged();
                                                 }
@@ -296,7 +318,7 @@ public class DeploymentsViewFragment extends SherlockListFragment {
 
                     runtimeName = detailsJsonObj.get("runtime-name").getAsString();
 
-                    adapter.add(new Deployment(name, runtimeName, enabled));
+                    adapter.add(new Deployment(name, runtimeName, enabled, null /* BYTES_VALUE is null */));
                 }
             }
 
@@ -348,50 +370,23 @@ public class DeploymentsViewFragment extends SherlockListFragment {
     class DeploymentHolder {
         ImageView icon = null;
         TextView name = null;
+        TextView runtimeName = null;
 
         DeploymentHolder(View row) {
             this.icon = (ImageView) row.findViewById(R.id.deployment_icon);
             this.name = (TextView) row.findViewById(R.id.deployment_name);
+            this.runtimeName = (TextView) row.findViewById(R.id.deployment_runtime_name);
         }
 
         void populateFrom(Deployment deployment) {
-            name.setText(deployment.name);
+            name.setText(deployment.getName());
+
+            // set runtime-name only if it differs from name
+            if (!deployment.getName().equals(deployment.getRuntimeName()))
+                runtimeName.setText(deployment.getRuntimeName());
+
             // check and set correct icon for the deployment
-            icon.setImageResource((deployment.enabled ? R.drawable.ic_deployment_up : R.drawable.ic_deployment_down));
-        }
-    }
-
-    class Deployment {
-        String name;
-        String runtimeName;
-        boolean enabled;
-
-        Deployment(String name, String runtimeName, boolean enabled) {
-            this.name = name;
-            this.runtimeName = runtimeName;
-            this.enabled = enabled;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            Deployment that = (Deployment) o;
-
-            if (enabled != that.enabled) return false;
-            if (name != null ? !name.equals(that.name) : that.name != null) return false;
-            if (runtimeName != null ? !runtimeName.equals(that.runtimeName) : that.runtimeName != null) return false;
-
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int result = name != null ? name.hashCode() : 0;
-            result = 31 * result + (runtimeName != null ? runtimeName.hashCode() : 0);
-            result = 31 * result + (enabled ? 1 : 0);
-            return result;
+            icon.setImageResource((deployment.isEnabled() ? R.drawable.ic_deployment_up : R.drawable.ic_deployment_down));
         }
     }
 }
