@@ -83,7 +83,7 @@ public class AddServerGroupDeploymentViewFragment extends SherlockListFragment {
 
         adapter = new ArrayAdapter<Deployment>(
                 getActivity(),
-                android.R.layout.simple_list_item_multiple_choice);
+                android.R.layout.simple_list_item_single_choice);
 
         setListAdapter(adapter);
 
