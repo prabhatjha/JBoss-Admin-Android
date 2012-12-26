@@ -6,6 +6,7 @@ import org.cvasilak.jboss.mobile.admin.util.ParametersMap;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 public class JBossOperationsManager {
@@ -343,6 +344,46 @@ public class JBossOperationsManager {
         ParametersMap params = ParametersMap.newMap()
                 .add("operation", "remove")
                 .add("address", prefixAddressWithDomainGroup(group, Arrays.asList("deployment", name)));
+
+        task = new TalkToJBossServerTask(context, server, callback);
+        task.execute(params);
+    }
+
+    public void addDeploymentContent(String deploymentHash, String name, List<String> groups, boolean enable, final Callback callback) {
+        attach(callback);
+
+        ParametersMap params;
+
+        ArrayList<ParametersMap> steps = new ArrayList<ParametersMap>();
+
+        for (String group : groups) {
+
+            HashMap<String, String> BYTES_VALUE = new HashMap<String, String>();
+            BYTES_VALUE.put("BYTES_VALUE", deploymentHash);
+
+            HashMap<String, HashMap<String, String>> HASH = new HashMap<String, HashMap<String, String>>();
+            HASH.put("hash", BYTES_VALUE);
+
+            params = ParametersMap.newMap()
+                    .add("operation", "add")
+                    .add("address", prefixAddressWithDomainGroup(group, Arrays.asList("deployment", name)))
+                    .add("name", name)
+                    .add("content", Arrays.asList(HASH));
+
+            steps.add(params);
+
+            if (enable) {
+                params = ParametersMap.newMap()
+                        .add("operation", "deploy")
+                        .add("address", prefixAddressWithDomainGroup(group, Arrays.asList("deployment", name)));
+
+                steps.add(params);
+            }
+        }
+
+        params = ParametersMap.newMap()
+                .add("operation", "composite")
+                .add("steps", steps);
 
         task = new TalkToJBossServerTask(context, server, callback);
         task.execute(params);

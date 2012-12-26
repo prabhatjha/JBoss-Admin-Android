@@ -8,6 +8,8 @@
 
     <string name="dialog_error_title">Error</string>
 
+    <string name="cancel">Cancel</string>
+
     <string name="dialog_button_OK">OK</string>
     <string name="dialog_button_Bummer">Bummer</string>
 
@@ -16,6 +18,9 @@
 
     <string name="dialog_confirm_delete_title">Confirm Delete</string>
     <string name="dialog_confirm_delete_msg">Are you sure you want delete %1$s?</string>
+
+    <string name="add_to_group_enable">Add to Group and Enable</string>
+    <string name="add_to_group">Add to Group</string>
 
     <!--  Shared -->
     <string name="add">Add</string>
@@ -46,6 +51,9 @@
     <string name="disable">Disable</string>
     <string name="dialog_confirm_deployment_title">Confirm Action</string>
     <string name="dialog_confirm_deployment_action">Are you sure you want to %1$s %2$s?</string>
+
+    <!--  AddServerGroupDeploymentViewFragment -->
+    <string name="dialog_confirm_deployment_operation">Please choose operation:</string>
 
     <!--  ProgressDialog Common Message -->
     <string name="connecting">Connecting, please wait..</string>
