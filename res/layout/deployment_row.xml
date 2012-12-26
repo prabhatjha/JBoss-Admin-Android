@@ -1,23 +1,33 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="fill_parent"
               android:layout_height="wrap_content"
-              android:orientation="horizontal">
+              android:orientation="horizontal"
+              android:padding="4px">
 
     <ImageView
             android:id="@+id/deployment_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginRight="14px"
             android:contentDescription="@string/icon"/>
 
-    <TextView
-            android:id="@+id/deployment_name"
-            android:layout_width="match_parent"
+    <LinearLayout
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceListItemSmall"
-            android:gravity="center_vertical"
-            android:paddingLeft="?android:attr/listPreferredItemPaddingLeft"
-            android:paddingRight="?android:attr/listPreferredItemPaddingRight"
-            android:minHeight="?android:attr/listPreferredItemHeightSmall"/>
+            android:orientation="vertical">
+
+        <TextView android:id="@+id/deployment_name"
+                  android:layout_width="fill_parent"
+                  android:layout_height="wrap_content"
+                  android:layout_gravity="center_vertical"
+                  android:textAppearance="?android:attr/textAppearanceListItemSmall"/>
+
+        <TextView android:id="@+id/deployment_runtime_name"
+                  android:layout_width="fill_parent"
+                  android:layout_height="wrap_content"
+                  android:layout_below="@+id/deployment_name"/>
+    </LinearLayout>
 </LinearLayout>
