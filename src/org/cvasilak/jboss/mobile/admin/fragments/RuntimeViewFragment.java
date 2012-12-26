@@ -161,11 +161,11 @@ public class RuntimeViewFragment extends SherlockListFragment {
         } else if (value.equals("Web")) {
             fragment = new WebConnectorTypeSelectorViewFragment();
         } else if (value.equals("Deployment Content")) {
-            fragment = new DeploymentsViewFragment();
+            fragment = DeploymentsViewFragment.newInstance(null, DeploymentsViewFragment.Mode.DOMAIN_MODE);
         } else if (value.equals("Server Groups")) {
             fragment = new DomainServerGroupsFragment();
         } else if (value.equals("Manage Deployments")) {
-            fragment = new DeploymentsViewFragment();
+            fragment = DeploymentsViewFragment.newInstance(null, DeploymentsViewFragment.Mode.STANDALONE_MODE);
         }
 
         FragmentTransaction transaction = getFragmentManager().beginTransaction();

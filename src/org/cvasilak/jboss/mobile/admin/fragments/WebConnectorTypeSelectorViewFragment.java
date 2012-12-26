@@ -90,7 +90,7 @@ public class WebConnectorTypeSelectorViewFragment extends SherlockListFragment {
 
     @Override
     public void onListItemClick(ListView list, View view, int position, long id) {
-        String connectorName = (String) list.getItemAtPosition(position);
+        String connectorName = adapter.getItem(position);
 
         WebConnectorMetricsViewFragment fragment = WebConnectorMetricsViewFragment.newInstance(connectorName);
 

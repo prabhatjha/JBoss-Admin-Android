@@ -91,7 +91,7 @@ public class JMSQueuesViewController extends SherlockListFragment {
 
     @Override
     public void onListItemClick(ListView list, View view, int position, long id) {
-        String queueName = (String) list.getItemAtPosition(position);
+        String queueName = adapter.getItem(position);
 
         JMSQueueMetricsViewFragment fragment = JMSQueueMetricsViewFragment.newInstance(queueName);
 

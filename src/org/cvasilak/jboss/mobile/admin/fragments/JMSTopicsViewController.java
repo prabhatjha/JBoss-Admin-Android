@@ -91,7 +91,7 @@ public class JMSTopicsViewController extends SherlockListFragment {
 
     @Override
     public void onListItemClick(ListView list, View view, int position, long id) {
-        String topicName = (String) list.getItemAtPosition(position);
+        String topicName = adapter.getItem(position);
 
         JMSTopicMetricsViewFragment fragment = JMSTopicMetricsViewFragment.newInstance(topicName);
 
