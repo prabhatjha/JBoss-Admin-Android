@@ -176,6 +176,8 @@ public class UploadToJBossServerTask extends AsyncTask<File, Integer, JsonElemen
 
     @Override
     protected void onCancelled() {
+        progressDialog.dismiss();
+
         isTaskFinished = true;
 
         if (callback != null)
