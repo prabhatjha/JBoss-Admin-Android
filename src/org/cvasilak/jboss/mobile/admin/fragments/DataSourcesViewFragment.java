@@ -149,7 +149,7 @@ public class DataSourcesViewFragment extends SherlockListFragment {
 
     class DataSourceAdapter extends ArrayAdapter<DataSource> {
         DataSourceAdapter() {
-            super(getSherlockActivity(), R.layout.datasource_row);
+            super(getActivity(), R.layout.datasource_row);
         }
 
         @Override

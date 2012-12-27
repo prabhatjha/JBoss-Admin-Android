@@ -173,9 +173,10 @@ public class ServersViewActivity extends SherlockListActivity {
                             ServersViewActivity.this);
 
                     alertDialog
-                            .setTitle(getString(R.string.dialog_confirm_delete_title))
-                            .setMessage(String.format(getString(R.string.dialog_confirm_delete_msg),
-                                    serversManager.serverAtIndex(selectedItemPos).getName()))
+                            .setTitle(String.format(getString(R.string.dialog_confirm_action_title), getString(R.string.action_delete)))
+                            .setMessage(String.format(getString(R.string.dialog_confirm_action_body),
+                                    getString(R.string.action_delete), serversManager.serverAtIndex(selectedItemPos).getName()))
+
                             .setIcon(R.drawable.ic_action_delete)
                             .setNegativeButton(getString(R.string.dialog_button_NO),
                                     null)

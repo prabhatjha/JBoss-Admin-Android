@@ -6,27 +6,29 @@
 
     <string name="icon">icon</string>
 
-    <string name="dialog_error_title">Error</string>
-
-    <string name="cancel">Cancel</string>
-
-    <string name="dialog_button_OK">OK</string>
-    <string name="dialog_button_Bummer">Bummer</string>
-
-    <string name="dialog_button_YES">Yes</string>
-    <string name="dialog_button_NO">No</string>
-
-    <string name="dialog_confirm_delete_title">Confirm Delete</string>
-    <string name="dialog_confirm_delete_msg">Are you sure you want delete %1$s?</string>
-
-    <string name="add_to_group_enable">Add to Group and Enable</string>
-    <string name="add_to_group">Add to Group</string>
-
     <!--  Shared -->
     <string name="add">Add</string>
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
     <string name="refresh">Refresh</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="action">Action</string>
+    <string name="action_enable">Enable</string>
+    <string name="action_disable">Disable</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_upload">Upload</string>
+
+    <string name="dialog_error_title">Error</string>
+    <string name="dialog_button_OK">OK</string>
+    <string name="dialog_button_Bummer">Bummer</string>
+    <string name="dialog_button_YES">Yes</string>
+    <string name="dialog_button_NO">No</string>
+    <string name="dialog_confirm_action_title">Confirm %1$s</string>
+    <string name="dialog_confirm_action_body">Are you sure you want to %1$s %2$s?</string>
+
+    <string name="add_to_group_enable">Add to Group and Enable</string>
+    <string name="add_to_group">Add to Group</string>
 
     <!--  RootViewActivity -->
     <string name="tab_runtime">Runtime</string>
@@ -45,20 +47,14 @@
     <string name="not_enough_parameters">Please complete at least Hostname and Port fields!</string>
     <string name="error_on_save">An error occured during save!</string>
 
-    <!--  DeploymentsViewFragment -->
-    <string name="action">Action</string>
-    <string name="enable">Enable</string>
-    <string name="disable">Disable</string>
-    <string name="dialog_confirm_deployment_title">Confirm Action</string>
-    <string name="dialog_confirm_deployment_action">Are you sure you want to %1$s %2$s?</string>
-
     <!--  AddServerGroupDeploymentViewFragment -->
     <string name="dialog_confirm_deployment_operation">Please choose operation:</string>
 
-    <!--  ProgressDialog Common Message -->
+    <!--  ProgressDialog Common Messages -->
     <string name="connecting">Connecting, please wait..</string>
     <string name="fetchingDomainInfo">Fetching domain information, please wait..</string>
     <string name="queryingServer">Querying server, please wait..</string>
     <string name="applyingAction">Applying action, please wait..</string>
+    <string name="uploading">Uploading, please wait..</string>
 
 </resources>

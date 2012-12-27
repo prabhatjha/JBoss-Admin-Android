@@ -27,6 +27,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -62,11 +63,22 @@ public class DeploymentsViewFragment extends SherlockListFragment {
     private int selectedItemPos = -1;
     private ActionMode mActionMode;
 
-    public static DeploymentsViewFragment newInstance(String group) {
+    public static enum Mode {
+        STANDALONE_MODE,
+        DOMAIN_MODE,
+        SERVER_MODE
+    }
+
+    ;
+
+    private Mode mode;
+
+    public static DeploymentsViewFragment newInstance(String group, Mode mode) {
         DeploymentsViewFragment f = new DeploymentsViewFragment();
 
         Bundle args = new Bundle();
         args.putString("group", group);
+        args.putString("mode", mode.name());
 
         f.setArguments(args);
 
@@ -79,8 +91,10 @@ public class DeploymentsViewFragment extends SherlockListFragment {
 
         Log.d(TAG, "@onCreate()");
 
-        if (getArguments() != null)
+        if (getArguments() != null) {
             this.group = getArguments().getString("group");
+            this.mode = Mode.valueOf(getArguments().getString("mode"));
+        }
 
         application = (JBossAdminApplication) getActivity().getApplication();
 
@@ -146,7 +160,12 @@ public class DeploymentsViewFragment extends SherlockListFragment {
 
         } else if (item.getItemId() == R.id.add) {
 
-            AddServerGroupDeploymentViewFragment fragment = AddServerGroupDeploymentViewFragment.newInstance(group, true);
+            Fragment fragment = null;
+
+            if (mode == Mode.SERVER_MODE)
+                fragment = AddServerGroupDeploymentViewFragment.newInstance(group, true);
+            else if (mode == Mode.DOMAIN_MODE || mode == Mode.STANDALONE_MODE)
+                fragment = new AddDeploymentViewFragment();
 
             FragmentTransaction transaction = getFragmentManager().beginTransaction();
             transaction
@@ -181,7 +200,7 @@ public class DeploymentsViewFragment extends SherlockListFragment {
 
             Deployment deployment = adapter.getItem(selectedItemPos);
 
-            item.setTitle(deployment.isEnabled() ? R.string.disable : R.string.enable);
+            item.setTitle(deployment.isEnabled() ? R.string.action_disable : R.string.action_enable);
 
             return true;
         }
@@ -196,9 +215,9 @@ public class DeploymentsViewFragment extends SherlockListFragment {
             switch (item.getItemId()) {
                 case R.id.deployments_context_delete:
                     alertDialog
-                            .setTitle(getString(R.string.dialog_confirm_delete_title))
-                            .setMessage(String.format(getString(R.string.dialog_confirm_delete_msg),
-                                    deployment.getName()))
+                            .setTitle(String.format(getString(R.string.dialog_confirm_action_title), getString(R.string.action_delete)))
+                            .setMessage(String.format(getString(R.string.dialog_confirm_action_body),
+                                    getString(R.string.action_delete), deployment.getName()))
                             .setIcon(R.drawable.ic_action_delete)
                             .setNegativeButton(getString(R.string.dialog_button_NO),
                                     null)
@@ -240,10 +259,13 @@ public class DeploymentsViewFragment extends SherlockListFragment {
                     return true;
 
                 case R.id.deployments_context_action:
+                    String action = deployment.isEnabled() ? getString(R.string.action_disable) : getString(R.string.action_enable);
+
                     alertDialog
-                            .setTitle(getString(R.string.dialog_confirm_deployment_title))
-                            .setMessage(String.format(getString(R.string.dialog_confirm_deployment_action),
-                                    deployment.isEnabled() ? "disable" : "enable", deployment.getName()))
+                            .setTitle(String.format(getString(R.string.dialog_confirm_action_title), action))
+                            .setMessage(String.format(getString(R.string.dialog_confirm_action_body),
+                                    action, deployment.getName()))
+
                             .setNegativeButton(getString(R.string.dialog_button_NO),
                                     null)
                             .setPositiveButton(getString(R.string.dialog_button_YES),
@@ -385,8 +407,12 @@ public class DeploymentsViewFragment extends SherlockListFragment {
             if (!deployment.getName().equals(deployment.getRuntimeName()))
                 runtimeName.setText(deployment.getRuntimeName());
 
-            // check and set correct icon for the deployment
-            icon.setImageResource((deployment.isEnabled() ? R.drawable.ic_deployment_up : R.drawable.ic_deployment_down));
+            // on domain mode, we only display the content
+            // repository "status" icon is unusable
+            if (mode == Mode.STANDALONE_MODE || mode == Mode.SERVER_MODE) {
+                // check and set correct icon for the deployment
+                icon.setImageResource((deployment.isEnabled() ? R.drawable.ic_deployment_up : R.drawable.ic_deployment_down));
+            }
         }
     }
 }

@@ -96,7 +96,7 @@ public class DomainServerGroupsFragment extends SherlockListFragment {
     public void onListItemClick(ListView list, View view, int position, long id) {
         Group group = adapter.getItem(position);
 
-        DeploymentsViewFragment fragment = DeploymentsViewFragment.newInstance(group.name);
+        DeploymentsViewFragment fragment = DeploymentsViewFragment.newInstance(group.name, DeploymentsViewFragment.Mode.SERVER_MODE);
 
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
         transaction
