@@ -8,6 +8,13 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 
+/*
+ * A MultipartEntity subclass that adds progress monitoring
+ *
+ * @author John Russel
+ * see http://toolongdidntread.com/android/android-multipart-post-with-progress-bar/
+ *
+ */
 public class CustomMultiPartEntity extends MultipartEntity {
 
     private final ProgressListener listener;
