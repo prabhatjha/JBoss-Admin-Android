@@ -101,7 +101,7 @@ public class ServerDetailActivity extends Activity {
 
                 alertDialog
                         .setTitle(R.string.dialog_error_title)
-                        .setMessage(R.string.not_enough_parameters)
+                        .setMessage(R.string.not_enough_params)
                         .setPositiveButton(R.string.dialog_button_Bummer, null)
                         .setCancelable(false)
                         .setIcon(android.R.drawable.ic_dialog_alert).show();
