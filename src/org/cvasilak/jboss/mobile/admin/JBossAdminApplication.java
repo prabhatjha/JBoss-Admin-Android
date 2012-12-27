@@ -23,12 +23,15 @@
 package org.cvasilak.jboss.mobile.admin;
 
 import android.app.Application;
+import android.os.Environment;
 import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.cvasilak.jboss.mobile.admin.model.Server;
 import org.cvasilak.jboss.mobile.admin.model.ServersManager;
 import org.cvasilak.jboss.mobile.admin.net.JBossOperationsManager;
+
+import java.io.File;
 
 public class JBossAdminApplication extends Application {
 
@@ -73,5 +76,27 @@ public class JBossAdminApplication extends Application {
 
     public Gson getJSONParser() {
         return gjson;
+    }
+
+
+    public File getLocalDeploymentsDirectory() {
+        File root;
+
+        // external storage has priority
+        if (isExternalStorageAvailable()) {
+            root = getExternalFilesDir(null);
+        } else {
+            root = getFilesDir();
+        }
+
+        return root;
+    }
+
+    public boolean isExternalStorageAvailable() {
+        String state = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(state)) {
+            return true;
+        }
+        return false;
     }
 }

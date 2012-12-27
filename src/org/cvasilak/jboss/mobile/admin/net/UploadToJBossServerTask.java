@@ -22,6 +22,7 @@
 
 package org.cvasilak.jboss.mobile.admin.net;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -34,17 +35,20 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.cvasilak.jboss.mobile.admin.JBossAdminApplication;
+import org.cvasilak.jboss.mobile.admin.R;
 import org.cvasilak.jboss.mobile.admin.model.Server;
 import org.cvasilak.jboss.mobile.admin.net.ssl.CustomHTTPClient;
-import org.cvasilak.jboss.mobile.admin.util.ParametersMap;
+import org.cvasilak.jboss.mobile.admin.util.CustomMultiPartEntity;
 
-public class TalkToJBossServerTask extends AsyncTask<ParametersMap, Void, JsonElement> {
+import java.io.File;
 
-    private static final String TAG = TalkToJBossServerTask.class.getSimpleName();
+public class UploadToJBossServerTask extends AsyncTask<File, Integer, JsonElement> {
+
+    private static final String TAG = UploadToJBossServerTask.class.getSimpleName();
 
     private Context context;
 
@@ -61,8 +65,10 @@ public class TalkToJBossServerTask extends AsyncTask<ParametersMap, Void, JsonEl
     private Gson gjson;
     private JsonParser parser;
 
+    private ProgressDialog progressDialog;
 
-    public TalkToJBossServerTask(Context context, Server server, Callback callback) {
+
+    public UploadToJBossServerTask(Context context, Server server, Callback callback) {
         this.context = context;
         this.client = CustomHTTPClient.getHttpClient();
         this.server = server;
@@ -81,29 +87,35 @@ public class TalkToJBossServerTask extends AsyncTask<ParametersMap, Void, JsonEl
 
     @Override
     protected void onPreExecute() {
-        super.onPreExecute();
+        progressDialog = new ProgressDialog(context);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        progressDialog.setMessage(context.getString(R.string.uploading));
+        progressDialog.setCancelable(true);
+        progressDialog.show();
     }
 
     @Override
-    protected JsonElement doInBackground(ParametersMap... objects) {
+    protected JsonElement doInBackground(File... objects) {
         if (client == null) {
             return null;
         }
 
-        ParametersMap params = objects[0];
-
-        // ask the server to pretty print
-        params.add("json.pretty", Boolean.TRUE);
+        final File file = objects[0];
+        final long length = file.length();
 
         try {
-            String json = gjson.toJson(params);
-            StringEntity entity = new StringEntity(json, "UTF-8");
-            entity.setContentType("application/json");
+            CustomMultiPartEntity multipart = new CustomMultiPartEntity(new CustomMultiPartEntity.ProgressListener() {
+                @Override
+                public void transferred(long num) {
+                    //Log.d(TAG, "length=" + length + " num=" + num);
+                    publishProgress((int) ((num * 100) / length));
+                }
+            });
 
-            HttpPost httpRequest = new HttpPost(server.getHostPort() + "/management");
-            httpRequest.setEntity(entity);
+            multipart.addPart(file.getName(), new FileBody(file));
 
-            Log.d(TAG, "--------> " + json);
+            HttpPost httpRequest = new HttpPost(server.getHostPort() + "/management/add-content");
+            httpRequest.setEntity(multipart);
 
             HttpResponse serverResponse = client.execute(httpRequest);
 
@@ -125,6 +137,8 @@ public class TalkToJBossServerTask extends AsyncTask<ParametersMap, Void, JsonEl
     @Override
     protected void onPostExecute(JsonElement reply) {
         super.onPostExecute(reply);
+
+        progressDialog.dismiss();
 
         isTaskFinished = true;
 
@@ -153,6 +167,11 @@ public class TalkToJBossServerTask extends AsyncTask<ParametersMap, Void, JsonEl
             }
         }
 
+    }
+
+    @Override
+    protected void onProgressUpdate(Integer... progress) {
+        progressDialog.setProgress((int) (progress[0]));
     }
 
     @Override

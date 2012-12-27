@@ -1,9 +1,11 @@
 package org.cvasilak.jboss.mobile.admin.net;
 
+import android.app.Activity;
 import android.content.Context;
 import org.cvasilak.jboss.mobile.admin.model.Server;
 import org.cvasilak.jboss.mobile.admin.util.ParametersMap;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -387,5 +389,10 @@ public class JBossOperationsManager {
 
         task = new TalkToJBossServerTask(context, server, callback);
         task.execute(params);
+    }
+
+    public void uploadFilename(File file, Activity activity, final Callback callback) {
+        UploadToJBossServerTask task = new UploadToJBossServerTask(activity, server, callback);
+        task.execute(file);
     }
 }
