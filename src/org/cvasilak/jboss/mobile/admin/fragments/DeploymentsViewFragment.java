@@ -168,7 +168,6 @@ public class DeploymentsViewFragment extends SherlockListFragment {
             FragmentTransaction transaction = getFragmentManager().beginTransaction();
             transaction
                     .replace(android.R.id.content, fragment)
-                    .addToBackStack(null)
                     .commit();
 
             return (true);

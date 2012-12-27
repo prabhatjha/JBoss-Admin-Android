@@ -44,17 +44,30 @@
     <string name="username">Username:</string>
     <string name="password">Password:</string>
     <string name="save">Save</string>
-    <string name="not_enough_parameters">Please complete at least Hostname and Port fields!</string>
+    <string name="not_enough_params">Please complete at least Hostname and Port fields!</string>
     <string name="error_on_save">An error occured during save!</string>
 
     <!--  AddServerGroupDeploymentViewFragment -->
     <string name="dialog_confirm_deployment_operation">Please choose operation:</string>
+
+    <!--  DeploymentDetailsViewFragment Common Messages -->
+    <string name="done">Done</string>
+    <string name="key">Key:</string>
+    <string name="name">Name:</string>
+    <string name="runtimeName">Runtime Name:</string>
+    <string name="missing_params">Please complete at least Name and Runtime Name!</string>
+
 
     <!--  ProgressDialog Common Messages -->
     <string name="connecting">Connecting, please wait..</string>
     <string name="fetchingDomainInfo">Fetching domain information, please wait..</string>
     <string name="queryingServer">Querying server, please wait..</string>
     <string name="applyingAction">Applying action, please wait..</string>
+    <string name="enablingDeployment">Enabling deployment, please wait..</string>
     <string name="uploading">Uploading, please wait..</string>
+
+    <!--  AddDeploymentViewFragment Common Messages -->
+    <string name="directory_empty_title">Directory Empty!</string>
+    <string name="directory_empty_msg">Upload your files in %1$s</string>
 
 </resources>

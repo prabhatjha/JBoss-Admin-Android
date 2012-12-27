@@ -110,6 +110,11 @@ public class JBossOperationsManager {
         return address;
     }
 
+    public void uploadFilename(File file, Activity activity, final Callback callback) {
+        UploadToJBossServerTask task = new UploadToJBossServerTask(activity, server, callback);
+        task.execute(file);
+    }
+
     public void fetchJBossVersion(final Callback callback) {
         attach(callback);
 
@@ -351,7 +356,7 @@ public class JBossOperationsManager {
         task.execute(params);
     }
 
-    public void addDeploymentContent(String deploymentHash, String name, List<String> groups, boolean enable, final Callback callback) {
+    public void addDeploymentContent(String hash, String name, List<String> groups, boolean enable, final Callback callback) {
         attach(callback);
 
         ParametersMap params;
@@ -361,7 +366,7 @@ public class JBossOperationsManager {
         for (String group : groups) {
 
             HashMap<String, String> BYTES_VALUE = new HashMap<String, String>();
-            BYTES_VALUE.put("BYTES_VALUE", deploymentHash);
+            BYTES_VALUE.put("BYTES_VALUE", hash);
 
             HashMap<String, HashMap<String, String>> HASH = new HashMap<String, HashMap<String, String>>();
             HASH.put("hash", BYTES_VALUE);
@@ -391,8 +396,23 @@ public class JBossOperationsManager {
         task.execute(params);
     }
 
-    public void uploadFilename(File file, Activity activity, final Callback callback) {
-        UploadToJBossServerTask task = new UploadToJBossServerTask(activity, server, callback);
-        task.execute(file);
+    public void addDeploymentContent(String hash, String name, String runtimeName, final Callback callback) {
+        attach(callback);
+
+        HashMap<String, String> BYTES_VALUE = new HashMap<String, String>();
+        BYTES_VALUE.put("BYTES_VALUE", hash);
+
+        HashMap<String, HashMap<String, String>> HASH = new HashMap<String, HashMap<String, String>>();
+        HASH.put("hash", BYTES_VALUE);
+
+        ParametersMap params = ParametersMap.newMap()
+                .add("operation", "add")
+                .add("address", Arrays.asList("deployment", name))
+                .add("name", name)
+                .add("runtime-name", runtimeName)
+                .add("content", Arrays.asList(HASH));
+
+        task = new TalkToJBossServerTask(context, server, callback);
+        task.execute(params);
     }
 }

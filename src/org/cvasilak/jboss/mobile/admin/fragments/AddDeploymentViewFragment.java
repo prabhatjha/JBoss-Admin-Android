@@ -26,6 +26,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -111,7 +112,15 @@ public class AddDeploymentViewFragment extends SherlockListFragment {
 
                                         @Override
                                         public void onSuccess(JsonElement reply) {
-                                            getFragmentManager().popBackStack();
+                                            String BYTES_VALUE = reply.getAsJsonObject().get("BYTES_VALUE").getAsString();
+                                            String name = file.getName();
+
+                                            DeploymentDetailsViewFragment fragment = DeploymentDetailsViewFragment.newInstance(BYTES_VALUE, name);
+
+                                            FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                                            transaction
+                                                    .replace(android.R.id.content, fragment)
+                                                    .commit();
                                         }
 
                                         @Override
