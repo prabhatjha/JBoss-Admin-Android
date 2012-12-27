@@ -31,6 +31,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 import com.actionbarsherlock.app.SherlockFragment;
 import com.google.gson.JsonElement;
 import org.cvasilak.jboss.mobile.admin.JBossAdminApplication;
@@ -121,6 +122,8 @@ public class DeploymentDetailsViewFragment extends SherlockFragment {
                 @Override
                 public void onSuccess(JsonElement reply) {
                     progress.dismiss();
+
+                    Toast.makeText(getActivity(), getString(R.string.deployment_added), Toast.LENGTH_SHORT).show();
 
                     getFragmentManager().popBackStack();
                 }

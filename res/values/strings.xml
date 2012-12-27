@@ -27,6 +27,12 @@
     <string name="dialog_confirm_action_title">Confirm %1$s</string>
     <string name="dialog_confirm_action_body">Are you sure you want to %1$s %2$s?</string>
 
+    <string name="deployment_uploaded">Successfully uploaded!</string>
+    <string name="deployment_added">Successfully added!</string>
+    <string name="deployment_deleted">Successfully deleted!</string>
+    <string name="deployment_enabled">Successfully enabled!</string>
+    <string name="deployment_disabled">Successfully disabled!</string>
+
     <string name="add_to_group_enable">Add to Group and Enable</string>
     <string name="add_to_group">Add to Group</string>
 

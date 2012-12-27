@@ -30,6 +30,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 import com.actionbarsherlock.app.SherlockListFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
@@ -112,6 +113,8 @@ public class AddDeploymentViewFragment extends SherlockListFragment {
 
                                         @Override
                                         public void onSuccess(JsonElement reply) {
+                                            Toast.makeText(getActivity(), getString(R.string.deployment_uploaded), Toast.LENGTH_SHORT).show();
+
                                             String BYTES_VALUE = reply.getAsJsonObject().get("BYTES_VALUE").getAsString();
                                             String name = file.getName();
 

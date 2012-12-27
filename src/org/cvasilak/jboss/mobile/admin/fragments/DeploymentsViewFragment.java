@@ -230,6 +230,8 @@ public class DeploymentsViewFragment extends SherlockListFragment {
                                                     progress.dismiss();
 
                                                     adapter.remove(deployment);
+
+                                                    Toast.makeText(getActivity(), getString(R.string.deployment_deleted), Toast.LENGTH_SHORT).show();
                                                 }
 
                                                 @Override
@@ -279,6 +281,10 @@ public class DeploymentsViewFragment extends SherlockListFragment {
                                                     deployment.setEnabled(!deployment.isEnabled());
 
                                                     adapter.notifyDataSetChanged();
+
+                                                    Toast.makeText(getActivity(), getString(deployment.isEnabled() ?
+                                                            R.string.deployment_enabled :
+                                                            R.string.deployment_disabled), Toast.LENGTH_SHORT).show();
                                                 }
 
                                                 @Override
