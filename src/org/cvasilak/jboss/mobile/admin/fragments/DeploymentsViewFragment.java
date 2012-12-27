@@ -69,8 +69,6 @@ public class DeploymentsViewFragment extends SherlockListFragment {
         SERVER_MODE
     }
 
-    ;
-
     private Mode mode;
 
     public static DeploymentsViewFragment newInstance(String group, Mode mode) {
