@@ -50,6 +50,8 @@ public class DeploymentDetailsDialogFragment extends SherlockDialogFragment {
     private EditText name;
     private EditText runtimeName;
 
+    private DeploymentAddedListener listener;
+
     public static DeploymentDetailsDialogFragment newInstance(String BYTES_VALUE, String name) {
         DeploymentDetailsDialogFragment f = new DeploymentDetailsDialogFragment();
 
@@ -127,6 +129,10 @@ public class DeploymentDetailsDialogFragment extends SherlockDialogFragment {
                     Toast.makeText(getActivity(), getString(R.string.deployment_added), Toast.LENGTH_SHORT).show();
 
                     dismiss();
+
+                    // notify to add new deployment to the list
+                    if (listener != null)
+                        listener.onDeploymentAdded(name.getText().toString(), runtimeName.getText().toString(), key.getText().toString());
                 }
 
                 @Override
@@ -146,4 +152,16 @@ public class DeploymentDetailsDialogFragment extends SherlockDialogFragment {
             });
         }
     };
+
+    public DeploymentAddedListener getListener() {
+        return listener;
+    }
+
+    public void setListener(DeploymentAddedListener listener) {
+        this.listener = listener;
+    }
+
+    public interface DeploymentAddedListener {
+        public void onDeploymentAdded(String name, String runtimeName, String key);
+    }
 }
