@@ -36,7 +36,6 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.AbstractHttpClient;
-import org.apache.http.impl.client.BasicResponseHandler;
 import org.cvasilak.jboss.mobile.admin.JBossAdminApplication;
 import org.cvasilak.jboss.mobile.admin.model.Server;
 import org.cvasilak.jboss.mobile.admin.net.ssl.CustomHTTPClient;
@@ -107,7 +106,7 @@ public class TalkToJBossServerTask extends AsyncTask<ParametersMap, Void, JsonEl
 
             HttpResponse serverResponse = client.execute(httpRequest);
 
-            BasicResponseHandler handler = new BasicResponseHandler();
+            JBossResponseHandler handler = new JBossResponseHandler();
             String response = handler.handleResponse(serverResponse);
 
             Log.d(TAG, "<-------- " + response);
