@@ -78,7 +78,6 @@ public class JBossAdminApplication extends Application {
         return gjson;
     }
 
-
     public File getLocalDeploymentsDirectory() {
         File root;
 
