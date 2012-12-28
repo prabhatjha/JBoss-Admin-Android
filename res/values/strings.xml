@@ -18,6 +18,7 @@
     <string name="action_disable">Disable</string>
     <string name="action_delete">Delete</string>
     <string name="action_upload">Upload</string>
+    <string name="action_add_to_group">Add to Group</string>
 
     <string name="dialog_error_title">Error</string>
     <string name="dialog_button_OK">OK</string>
@@ -60,6 +61,7 @@
     <string name="directory_empty_msg">Upload your files in %1$s</string>
     <string name="dialog_confirm_deployment_operation">Please choose operation:</string>
     <string name="add_deployment_from_repository">Content Repository:</string>
+    <string name="add_deployment_to_group">Add to Group:</string>
 
     <!--  DeploymentDetailsDialogFragment Common Messages -->
     <string name="done">Done</string>
