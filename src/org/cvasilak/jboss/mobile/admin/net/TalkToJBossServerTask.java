@@ -148,7 +148,7 @@ public class TalkToJBossServerTask extends AsyncTask<ParametersMap, Void, JsonEl
                 if (elem.isJsonPrimitive()) {
                     callback.onFailure(new RuntimeException(elem.getAsString()));
                 } else if (elem.isJsonObject())
-                    callback.onFailure(new RuntimeException(elem.getAsJsonObject().get("domain-failure-description").getAsString()));
+                    callback.onFailure(new RuntimeException(elem.getAsJsonObject().get("domain-failure-description").toString()));
             }
         }
 
