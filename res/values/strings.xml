@@ -62,7 +62,7 @@
     <!--  AddServerGroupDeploymentViewFragment -->
     <string name="dialog_confirm_deployment_operation">Please choose operation:</string>
 
-    <!--  DeploymentDetailsViewFragment Common Messages -->
+    <!--  DeploymentDetailsDialogFragment Common Messages -->
     <string name="done">Done</string>
     <string name="key">Key:</string>
     <string name="name">Name:</string>

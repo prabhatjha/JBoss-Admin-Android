@@ -38,9 +38,9 @@ import org.cvasilak.jboss.mobile.admin.JBossAdminApplication;
 import org.cvasilak.jboss.mobile.admin.R;
 import org.cvasilak.jboss.mobile.admin.net.Callback;
 
-public class DeploymentDetailsViewFragment extends SherlockDialogFragment {
+public class DeploymentDetailsDialogFragment extends SherlockDialogFragment {
 
-    private static final String TAG = DeploymentDetailsViewFragment.class.getSimpleName();
+    private static final String TAG = DeploymentDetailsDialogFragment.class.getSimpleName();
 
     private JBossAdminApplication application;
 
@@ -50,8 +50,8 @@ public class DeploymentDetailsViewFragment extends SherlockDialogFragment {
     private EditText name;
     private EditText runtimeName;
 
-    public static DeploymentDetailsViewFragment newInstance(String BYTES_VALUE, String name) {
-        DeploymentDetailsViewFragment f = new DeploymentDetailsViewFragment();
+    public static DeploymentDetailsDialogFragment newInstance(String BYTES_VALUE, String name) {
+        DeploymentDetailsDialogFragment f = new DeploymentDetailsDialogFragment();
 
         Bundle args = new Bundle();
         args.putString("BYTES_VALUE", BYTES_VALUE);

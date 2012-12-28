@@ -382,7 +382,7 @@ public class DeploymentsViewFragment extends SherlockListFragment {
 
                                         String BYTES_VALUE = reply.getAsJsonObject().get("BYTES_VALUE").getAsString();
 
-                                        DeploymentDetailsViewFragment fragment = DeploymentDetailsViewFragment.newInstance(BYTES_VALUE, filename);
+                                        DeploymentDetailsDialogFragment fragment = DeploymentDetailsDialogFragment.newInstance(BYTES_VALUE, filename);
 
                                         FragmentManager fm = getActivity().getSupportFragmentManager();
                                         fragment.show(fm, null);
