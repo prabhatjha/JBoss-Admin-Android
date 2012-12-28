@@ -58,9 +58,8 @@
     <string name="upload_deployment_step2">Step2/2: Verify</string>
     <string name="directory_empty_title">Directory Empty!</string>
     <string name="directory_empty_msg">Upload your files in %1$s</string>
-
-    <!--  AddServerGroupDeploymentViewFragment -->
     <string name="dialog_confirm_deployment_operation">Please choose operation:</string>
+    <string name="add_deployment_from_repository">Content Repository:</string>
 
     <!--  DeploymentDetailsDialogFragment Common Messages -->
     <string name="done">Done</string>

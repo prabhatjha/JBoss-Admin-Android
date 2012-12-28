@@ -27,7 +27,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -50,7 +49,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Map;
 
-public class DeploymentsViewFragment extends SherlockListFragment {
+public class DeploymentsViewFragment extends SherlockListFragment implements DeploymentDetailsDialogFragment.DeploymentAddedListener {
 
     private static final String TAG = DeploymentsViewFragment.class.getSimpleName();
 
@@ -134,13 +133,6 @@ public class DeploymentsViewFragment extends SherlockListFragment {
             }
         });
 
-        //refresh();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
         refresh();
     }
 
@@ -160,17 +152,10 @@ public class DeploymentsViewFragment extends SherlockListFragment {
 
         } else if (item.getItemId() == R.id.add) {
 
-            Fragment fragment = null;
-
             if (mode == Mode.SERVER_MODE)
-                fragment = AddServerGroupDeploymentViewFragment.newInstance(group, true);
+                showRepositoryDeployments();
             else if (mode == Mode.DOMAIN_MODE || mode == Mode.STANDALONE_MODE)
                 showLocalDeployments();
-
-            /*
-            RootViewActivity parentActivity = (RootViewActivity) getActivity();
-            parentActivity.transition(fragment, true);
-            */
 
             return (true);
         }
@@ -344,26 +329,153 @@ public class DeploymentsViewFragment extends SherlockListFragment {
                 getActivity());
 
         filesDialog.setTitle(R.string.upload_deployment_step1);
-        filesDialog.setSingleChoiceItems(files, -1, null);
 
+        filesDialog.setSingleChoiceItems(files, -1, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                // enable button if a deployment is clicked
+                ((AlertDialog) dialogInterface).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
+            }
+        });
+
+        // Cancel Button
+        filesDialog.setNegativeButton(R.string.cancel, null);
+
+        // Upload Button
         filesDialog.setPositiveButton(R.string.action_upload, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 int selectedPosition = ((AlertDialog) dialogInterface).getListView().getCheckedItemPosition();
+
                 uploadDeployment(files[selectedPosition]);
             }
         });
-
-        filesDialog.setNegativeButton(R.string.cancel, null);
-
         filesDialog.setCancelable(true);
-        filesDialog.show();
+
+        AlertDialog dialog = filesDialog.create();
+        // initially show upload button disabled
+        // wait until a deployment is enabled
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface dialogInterface) {
+                ((AlertDialog) dialogInterface).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+            }
+        });
+
+        dialog.show();
     }
 
+    public void showRepositoryDeployments() {
+        progress = ProgressDialog.show(getSherlockActivity(), "", getString(R.string.queryingServer));
+
+        application.getOperationsManager().fetchDeployments(null, new Callback() {
+            @Override
+            public void onSuccess(JsonElement reply) {
+                progress.dismiss();
+
+                String name, runtimeName, BYTES_VALUE;
+                boolean enabled = false;
+
+                JsonObject jsonObj = reply.getAsJsonObject();
+
+                final ArrayAdapter<Deployment> repoAdapter = new ArrayAdapter<Deployment>(
+                        getActivity(),
+                        android.R.layout.simple_list_item_single_choice);
+
+                for (Map.Entry<String, JsonElement> e : jsonObj.entrySet()) {
+                    name = e.getKey();
+
+                    JsonObject detailsJsonObj = e.getValue().getAsJsonObject();
+
+                    if (detailsJsonObj.get("enabled") != null)
+                        enabled = detailsJsonObj.get("enabled").getAsBoolean();
+
+                    runtimeName = detailsJsonObj.get("runtime-name").getAsString();
+
+                    // "content" : [{"hash" : { "BYTES_VALUE" : "Pb4xyzgJmsxruKEf5eGOLu6lBjw="}}],
+                    BYTES_VALUE = detailsJsonObj.get("content").getAsJsonArray().get(0).getAsJsonObject().
+                            get("hash").getAsJsonObject().
+                            get("BYTES_VALUE").getAsString();
+
+                    repoAdapter.add(new Deployment(name, runtimeName, enabled, BYTES_VALUE));
+                }
+
+                // time to display content repository
+                AlertDialog.Builder filesDialog = new AlertDialog.Builder(
+                        getActivity());
+
+                filesDialog.setTitle(R.string.add_deployment_from_repository);
+                filesDialog.setSingleChoiceItems(repoAdapter, -1, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        // enable buttons if a deployment is clicked
+                        ((AlertDialog) dialogInterface).getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(true);
+                        ((AlertDialog) dialogInterface).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
+                    }
+                });
+
+                // Cancel Button
+                filesDialog.setNegativeButton(R.string.cancel, null);
+
+                // Add to Group Button
+                filesDialog.setNeutralButton(R.string.add_to_group, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        int selectedPosition = ((AlertDialog) dialogInterface).getListView().getCheckedItemPosition();
+
+                        addContent(repoAdapter.getItem(selectedPosition), false);
+                    }
+                });
+
+                // Add to Group and Enable Button
+                filesDialog.setPositiveButton(R.string.add_to_group_enable, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        int selectedPosition = ((AlertDialog) dialogInterface).getListView().getCheckedItemPosition();
+
+                        addContent(repoAdapter.getItem(selectedPosition), true);
+                    }
+                });
+                filesDialog.setCancelable(true);
+
+                AlertDialog dialog = filesDialog.create();
+                // initially show add* buttons disabled
+                // wait until a deployment is enabled
+                dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+                    @Override
+                    public void onShow(DialogInterface dialogInterface) {
+                        ((AlertDialog) dialogInterface).getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(false);
+                        ((AlertDialog) dialogInterface).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+                    }
+                });
+
+                dialog.show();
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                progress.dismiss();
+
+                AlertDialog.Builder alertDialog = new AlertDialog.Builder(
+                        getActivity());
+
+                alertDialog
+                        .setTitle(R.string.dialog_error_title)
+                        .setMessage(e.getMessage())
+                        .setPositiveButton(R.string.dialog_button_Bummer, null)
+                        .setCancelable(false)
+                        .setIcon(android.R.drawable.ic_dialog_alert).show();
+
+            }
+        });
+    }
+
+    //------------------------------------------------------------------
     public void uploadDeployment(final String filename) {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(
                 getActivity());
 
+        final DeploymentsViewFragment s = this;
         alertDialog
                 .setTitle(String.format(getString(R.string.dialog_confirm_action_title), getString(R.string.action_upload)))
                 .setMessage(String.format(getString(R.string.dialog_confirm_action_body),
@@ -374,6 +486,7 @@ public class DeploymentsViewFragment extends SherlockListFragment {
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog,
                                                 int which) {
+
                                 application.getOperationsManager().uploadFilename(new File(application.getLocalDeploymentsDirectory(), filename), getActivity(), new Callback() {
 
                                     @Override
@@ -383,6 +496,7 @@ public class DeploymentsViewFragment extends SherlockListFragment {
                                         String BYTES_VALUE = reply.getAsJsonObject().get("BYTES_VALUE").getAsString();
 
                                         DeploymentDetailsDialogFragment fragment = DeploymentDetailsDialogFragment.newInstance(BYTES_VALUE, filename);
+                                        fragment.setListener(s);
 
                                         FragmentManager fm = getActivity().getSupportFragmentManager();
                                         fragment.show(fm, null);
@@ -403,6 +517,58 @@ public class DeploymentsViewFragment extends SherlockListFragment {
                                 }
 
                                 );
+
+                            }
+                        }).show();
+    }
+
+    public void addContent(final Deployment deployment, final boolean enable) {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(
+                getActivity());
+
+        final DeploymentsViewFragment s = this;
+        alertDialog
+                .setTitle(String.format(getString(R.string.dialog_confirm_action_title), ""))
+                .setMessage(String.format(getString(R.string.dialog_confirm_action_body),
+                        enable ? getString(R.string.add_to_group_enable) : getString(R.string.add_to_group), ""))
+                .setNegativeButton(getString(R.string.dialog_button_NO),
+                        null)
+                .setPositiveButton(getString(R.string.dialog_button_YES),
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog,
+                                                int which) {
+
+                                progress = ProgressDialog.show(getSherlockActivity(), "", getString(R.string.applyingAction));
+
+                                application.getOperationsManager().addDeploymentContent(deployment.getBYTES_VALUE(), deployment.getName(), Arrays.asList(group), enable, new Callback() {
+                                    @Override
+                                    public void onSuccess(JsonElement reply) {
+                                        progress.dismiss();
+
+                                        Toast.makeText(getActivity(), getString(R.string.deployment_added), Toast.LENGTH_SHORT).show();
+
+                                        // reflect enable in our model
+                                        deployment.setEnabled(enable);
+
+                                        // add to list
+                                        adapter.add(deployment);
+                                    }
+
+                                    @Override
+                                    public void onFailure(Exception e) {
+                                        progress.dismiss();
+
+                                        AlertDialog.Builder alertDialog = new AlertDialog.Builder(
+                                                getActivity());
+
+                                        alertDialog
+                                                .setTitle(R.string.dialog_error_title)
+                                                .setMessage(e.getMessage())
+                                                .setPositiveButton(R.string.dialog_button_Bummer, null)
+                                                .setCancelable(false)
+                                                .setIcon(android.R.drawable.ic_dialog_alert).show();
+                                    }
+                                });
 
                             }
                         }).show();
@@ -453,6 +619,11 @@ public class DeploymentsViewFragment extends SherlockListFragment {
 
             }
         });
+    }
+
+    @Override
+    public void onDeploymentAdded(String name, String runtimeName, String key) {
+        adapter.add(new Deployment(name, runtimeName, false, key));
     }
 
     class DeploymentAdapter extends ArrayAdapter<Deployment> {
