@@ -24,6 +24,7 @@ package org.cvasilak.jboss.mobile.admin.fragments;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.View;
@@ -79,14 +80,15 @@ public class ProfileViewFragment extends SherlockListFragment {
 
     @Override
     public void onListItemClick(ListView list, View view, int position, long id) {
-        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+        Fragment fragment = new ConfigurationViewFragment();
 
-        transaction
-                .setCustomAnimations(android.R.anim.slide_out_right, android.R.anim.slide_in_left)
-                .replace(android.R.id.content, new ConfigurationViewFragment())
-                .addToBackStack(null)
+        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+        transaction.setCustomAnimations(android.R.anim.slide_in_left,
+                android.R.anim.slide_out_right, android.R.anim.slide_in_left,
+                android.R.anim.slide_out_right);
+
+        transaction.addToBackStack(null)
+                .replace(android.R.id.content, fragment, null)
                 .commit();
-
-        Log.d(TAG, String.valueOf(position));
     }
 }

@@ -32,13 +32,13 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-import com.actionbarsherlock.app.SherlockFragment;
+import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.google.gson.JsonElement;
 import org.cvasilak.jboss.mobile.admin.JBossAdminApplication;
 import org.cvasilak.jboss.mobile.admin.R;
 import org.cvasilak.jboss.mobile.admin.net.Callback;
 
-public class DeploymentDetailsViewFragment extends SherlockFragment {
+public class DeploymentDetailsViewFragment extends SherlockDialogFragment {
 
     private static final String TAG = DeploymentDetailsViewFragment.class.getSimpleName();
 
@@ -75,6 +75,7 @@ public class DeploymentDetailsViewFragment extends SherlockFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.d(TAG, "@onCreateView()");
 
+        getDialog().setTitle(R.string.upload_deployment_step2);
         View view = inflater.inflate(R.layout.deploymentdetail_form, container, false);
 
         key = (EditText) view.findViewById(R.id.key);
@@ -125,7 +126,7 @@ public class DeploymentDetailsViewFragment extends SherlockFragment {
 
                     Toast.makeText(getActivity(), getString(R.string.deployment_added), Toast.LENGTH_SHORT).show();
 
-                    getFragmentManager().popBackStack();
+                    dismiss();
                 }
 
                 @Override

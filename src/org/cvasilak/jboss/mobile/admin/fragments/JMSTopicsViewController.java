@@ -95,12 +95,14 @@ public class JMSTopicsViewController extends SherlockListFragment {
 
         JMSTopicMetricsViewFragment fragment = JMSTopicMetricsViewFragment.newInstance(topicName);
 
-        FragmentTransaction transaction = getFragmentManager().beginTransaction();
-        transaction
-                .replace(android.R.id.content, fragment)
-                .addToBackStack(null)
-                .commit();
+        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+        transaction.setCustomAnimations(android.R.anim.slide_in_left,
+                android.R.anim.slide_out_right, android.R.anim.slide_in_left,
+                android.R.anim.slide_out_right);
 
+        transaction.addToBackStack(null)
+                .replace(android.R.id.content, fragment, null)
+                .commit();
     }
 
     public void refresh() {

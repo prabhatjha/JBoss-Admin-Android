@@ -95,15 +95,16 @@ public class DataSourcesViewFragment extends SherlockListFragment {
     @Override
     public void onListItemClick(ListView list, View view, int position, long id) {
         DataSource selectedDS = adapter.getItem(position);
-        DataSourceMetricsViewFragment dsMetrics = DataSourceMetricsViewFragment.newInstance(selectedDS.name, selectedDS.type);
+        DataSourceMetricsViewFragment fragment = DataSourceMetricsViewFragment.newInstance(selectedDS.name, selectedDS.type);
 
-        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+        transaction.setCustomAnimations(android.R.anim.slide_in_left,
+                android.R.anim.slide_out_right, android.R.anim.slide_in_left,
+                android.R.anim.slide_out_right);
 
-        transaction
-                .replace(android.R.id.content, dsMetrics)
-                .addToBackStack(null)
+        transaction.addToBackStack(null)
+                .replace(android.R.id.content, fragment, null)
                 .commit();
-
     }
 
     public void refresh() {

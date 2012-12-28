@@ -98,10 +98,13 @@ public class DomainServerGroupsFragment extends SherlockListFragment {
 
         DeploymentsViewFragment fragment = DeploymentsViewFragment.newInstance(group.name, DeploymentsViewFragment.Mode.SERVER_MODE);
 
-        FragmentTransaction transaction = getFragmentManager().beginTransaction();
-        transaction
-                .replace(android.R.id.content, fragment)
-                .addToBackStack(null)
+        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+        transaction.setCustomAnimations(android.R.anim.slide_in_left,
+                android.R.anim.slide_out_right, android.R.anim.slide_in_left,
+                android.R.anim.slide_out_right);
+
+        transaction.addToBackStack(null)
+                .replace(android.R.id.content, fragment, null)
                 .commit();
     }
 
@@ -151,7 +154,6 @@ public class DomainServerGroupsFragment extends SherlockListFragment {
 
             }
         });
-
     }
 
     class GroupAdapter extends ArrayAdapter<Group> {

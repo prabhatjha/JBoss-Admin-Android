@@ -28,7 +28,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,6 +46,8 @@ import org.cvasilak.jboss.mobile.admin.R;
 import org.cvasilak.jboss.mobile.admin.model.Deployment;
 import org.cvasilak.jboss.mobile.admin.net.Callback;
 
+import java.io.File;
+import java.util.Arrays;
 import java.util.Map;
 
 public class DeploymentsViewFragment extends SherlockListFragment {
@@ -163,12 +165,12 @@ public class DeploymentsViewFragment extends SherlockListFragment {
             if (mode == Mode.SERVER_MODE)
                 fragment = AddServerGroupDeploymentViewFragment.newInstance(group, true);
             else if (mode == Mode.DOMAIN_MODE || mode == Mode.STANDALONE_MODE)
-                fragment = new AddDeploymentViewFragment();
+                showLocalDeployments();
 
-            FragmentTransaction transaction = getFragmentManager().beginTransaction();
-            transaction
-                    .replace(android.R.id.content, fragment)
-                    .commit();
+            /*
+            RootViewActivity parentActivity = (RootViewActivity) getActivity();
+            parentActivity.transition(fragment, true);
+            */
 
             return (true);
         }
@@ -178,8 +180,6 @@ public class DeploymentsViewFragment extends SherlockListFragment {
 
     @Override
     public void onListItemClick(ListView list, View view, int position, long id) {
-
-
     }
 
     private final class ActionModeCallback implements ActionMode.Callback {
@@ -316,6 +316,96 @@ public class DeploymentsViewFragment extends SherlockListFragment {
         public void onDestroyActionMode(ActionMode mode) {
             mActionMode = null;
         }
+    }
+
+    public void showLocalDeployments() {
+        File root = application.getLocalDeploymentsDirectory();
+
+        final String[] files = root.list();
+
+        if (files.length == 0) {
+            AlertDialog.Builder alertDialog = new AlertDialog.Builder(
+                    getActivity());
+
+            alertDialog
+                    .setTitle(R.string.directory_empty_title)
+                    .setMessage(String.format(getString(R.string.directory_empty_msg), root.getAbsolutePath()))
+                    .setPositiveButton(R.string.dialog_button_Bummer, null)
+                    .setCancelable(false)
+                    .setIcon(android.R.drawable.ic_dialog_alert).show();
+
+            return;
+        }
+
+        Arrays.sort(files);
+
+        // time to display the list of files
+        AlertDialog.Builder filesDialog = new AlertDialog.Builder(
+                getActivity());
+
+        filesDialog.setTitle(R.string.upload_deployment_step1);
+        filesDialog.setSingleChoiceItems(files, -1, null);
+
+        filesDialog.setPositiveButton(R.string.action_upload, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                int selectedPosition = ((AlertDialog) dialogInterface).getListView().getCheckedItemPosition();
+                uploadDeployment(files[selectedPosition]);
+            }
+        });
+
+        filesDialog.setNegativeButton(R.string.cancel, null);
+
+        filesDialog.setCancelable(true);
+        filesDialog.show();
+    }
+
+    public void uploadDeployment(final String filename) {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(
+                getActivity());
+
+        alertDialog
+                .setTitle(String.format(getString(R.string.dialog_confirm_action_title), getString(R.string.action_upload)))
+                .setMessage(String.format(getString(R.string.dialog_confirm_action_body),
+                        getString(R.string.action_upload), filename))
+                .setNegativeButton(getString(R.string.dialog_button_NO),
+                        null)
+                .setPositiveButton(getString(R.string.dialog_button_YES),
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog,
+                                                int which) {
+                                application.getOperationsManager().uploadFilename(new File(application.getLocalDeploymentsDirectory(), filename), getActivity(), new Callback() {
+
+                                    @Override
+                                    public void onSuccess(JsonElement reply) {
+                                        Toast.makeText(getActivity(), getString(R.string.deployment_uploaded), Toast.LENGTH_SHORT).show();
+
+                                        String BYTES_VALUE = reply.getAsJsonObject().get("BYTES_VALUE").getAsString();
+
+                                        DeploymentDetailsViewFragment fragment = DeploymentDetailsViewFragment.newInstance(BYTES_VALUE, filename);
+
+                                        FragmentManager fm = getActivity().getSupportFragmentManager();
+                                        fragment.show(fm, null);
+                                    }
+
+                                    @Override
+                                    public void onFailure(Exception e) {
+                                        AlertDialog.Builder alertDialog = new AlertDialog.Builder(
+                                                getActivity());
+
+                                        alertDialog
+                                                .setTitle(R.string.dialog_error_title)
+                                                .setMessage(e.getMessage())
+                                                .setPositiveButton(R.string.dialog_button_Bummer, null)
+                                                .setCancelable(false)
+                                                .setIcon(android.R.drawable.ic_dialog_alert).show();
+                                    }
+                                }
+
+                                );
+
+                            }
+                        }).show();
     }
 
     public void refresh() {

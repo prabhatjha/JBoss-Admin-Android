@@ -64,7 +64,7 @@ public class RuntimeViewFragment extends SherlockListFragment {
         // if not already set
         if (application.getOperationsManager().getDomainHost() == null) {
             // determine whether we are running in STANDALONE or DOMAIN mode
-            progress = ProgressDialog.show(getSherlockActivity(), "", getString(R.string.fetchingDomainInfo));
+            progress = ProgressDialog.show(getActivity(), "", getString(R.string.fetchingDomainInfo));
 
             application.getOperationsManager().fetchActiveServerInformation(new Callback() {
                 @Override
@@ -168,11 +168,13 @@ public class RuntimeViewFragment extends SherlockListFragment {
             fragment = DeploymentsViewFragment.newInstance(null, DeploymentsViewFragment.Mode.STANDALONE_MODE);
         }
 
-        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+        transaction.setCustomAnimations(android.R.anim.slide_in_left,
+                android.R.anim.slide_out_right, android.R.anim.slide_in_left,
+                android.R.anim.slide_out_right);
 
-        transaction
-                .replace(android.R.id.content, fragment)
-                .addToBackStack(null)
+        transaction.addToBackStack(null)
+                .replace(android.R.id.content, fragment, null)
                 .commit();
     }
 }
