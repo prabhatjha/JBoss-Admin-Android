@@ -53,6 +53,12 @@
     <string name="not_enough_params">Please complete at least Hostname and Port fields!</string>
     <string name="error_on_save">An error occured during save!</string>
 
+    <!--  DeploymentsViewFragment Messages -->
+    <string name="upload_deployment_step1">Step1/2: Upload</string>
+    <string name="upload_deployment_step2">Step2/2: Verify</string>
+    <string name="directory_empty_title">Directory Empty!</string>
+    <string name="directory_empty_msg">Upload your files in %1$s</string>
+
     <!--  AddServerGroupDeploymentViewFragment -->
     <string name="dialog_confirm_deployment_operation">Please choose operation:</string>
 
@@ -71,9 +77,5 @@
     <string name="applyingAction">Applying action, please wait..</string>
     <string name="enablingDeployment">Enabling deployment, please wait..</string>
     <string name="uploading">Uploading, please wait..</string>
-
-    <!--  AddDeploymentViewFragment Common Messages -->
-    <string name="directory_empty_title">Directory Empty!</string>
-    <string name="directory_empty_msg">Upload your files in %1$s</string>
 
 </resources>
