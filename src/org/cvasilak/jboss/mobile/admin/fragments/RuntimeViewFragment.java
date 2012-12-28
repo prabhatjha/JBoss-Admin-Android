@@ -64,6 +64,7 @@ public class RuntimeViewFragment extends SherlockListFragment {
         // if not already set
         if (application.getOperationsManager().getDomainHost() == null) {
             // determine whether we are running in STANDALONE or DOMAIN mode
+            // and update table view accordingly
             progress = ProgressDialog.show(getActivity(), "", getString(R.string.fetchingDomainInfo));
 
             application.getOperationsManager().fetchActiveServerInformation(new Callback() {
@@ -94,6 +95,7 @@ public class RuntimeViewFragment extends SherlockListFragment {
 
                     application.getOperationsManager().changeActiveMonitoringServer(host, server);
 
+                    // update table to reflect mode
                     updateTable();
                 }
 
@@ -174,7 +176,7 @@ public class RuntimeViewFragment extends SherlockListFragment {
                 android.R.anim.slide_out_right);
 
         transaction.addToBackStack(null)
-                .replace(android.R.id.content, fragment, null)
+                .replace(android.R.id.content, fragment, fragment.getClass().getSimpleName())
                 .commit();
     }
 }
