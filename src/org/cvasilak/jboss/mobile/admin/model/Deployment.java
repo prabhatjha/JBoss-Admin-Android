@@ -23,10 +23,14 @@
 package org.cvasilak.jboss.mobile.admin.model;
 
 public class Deployment {
+
     private String name;
     private String runtimeName;
     private boolean enabled;
     private String BYTES_VALUE;
+
+    public Deployment() {
+    }
 
     public Deployment(String name, String runtimeName, boolean enabled, String BYTES_VALUE) {
         this.name = name;
