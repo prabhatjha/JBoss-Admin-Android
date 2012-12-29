@@ -41,9 +41,9 @@ import org.cvasilak.jboss.mobile.admin.R;
 import org.cvasilak.jboss.mobile.admin.net.Callback;
 import org.cvasilak.jboss.mobile.admin.net.JBossOperationsManager.JMSType;
 
-public class JMSQueuesViewController extends SherlockListFragment {
+public class JMSTopicsViewFragment extends SherlockListFragment {
 
-    private static final String TAG = JMSQueuesViewController.class.getSimpleName();
+    private static final String TAG = JMSTopicsViewFragment.class.getSimpleName();
 
     private JBossAdminApplication application;
 
@@ -91,9 +91,9 @@ public class JMSQueuesViewController extends SherlockListFragment {
 
     @Override
     public void onListItemClick(ListView list, View view, int position, long id) {
-        String queueName = adapter.getItem(position);
+        String topicName = adapter.getItem(position);
 
-        JMSQueueMetricsViewFragment fragment = JMSQueueMetricsViewFragment.newInstance(queueName);
+        JMSTopicMetricsViewFragment fragment = JMSTopicMetricsViewFragment.newInstance(topicName);
 
         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
         transaction.setCustomAnimations(android.R.anim.slide_in_left,
@@ -108,7 +108,7 @@ public class JMSQueuesViewController extends SherlockListFragment {
     public void refresh() {
         progress = ProgressDialog.show(getSherlockActivity(), "", getString(R.string.queryingServer));
 
-        application.getOperationsManager().fetchJMSMessagingModelList(JMSType.QUEUE, new Callback() {
+        application.getOperationsManager().fetchJMSMessagingModelList(JMSType.TOPIC, new Callback() {
             @Override
             public void onSuccess(JsonElement reply) {
                 progress.dismiss();
