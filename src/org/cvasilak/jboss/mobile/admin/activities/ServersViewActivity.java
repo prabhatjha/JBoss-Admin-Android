@@ -65,9 +65,6 @@ public class ServersViewActivity extends SherlockListActivity {
 
     private ActionMode mActionMode;
 
-    /**
-     * Called when the activity is first created.
-     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,8 +78,6 @@ public class ServersViewActivity extends SherlockListActivity {
 
         setListAdapter(adapter);
 
-        // Define the contextual action mode
-        //registerForContextMenu(getListView());
         getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         getListView().setOnItemLongClickListener(new OnItemLongClickListener() {
 
