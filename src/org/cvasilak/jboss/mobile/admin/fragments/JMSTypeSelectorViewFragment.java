@@ -62,9 +62,9 @@ public class JMSTypeSelectorViewFragment extends SherlockListFragment {
         Fragment fragment = null;
 
         if (value.equals("Queues")) {
-            fragment = new JMSQueuesViewController();
+            fragment = new JMSQueuesViewFragment();
         } else if (value.equals("Topics")) {
-            fragment = new JMSTopicsViewController();
+            fragment = new JMSTopicsViewFragment();
         }
 
         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
