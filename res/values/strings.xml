@@ -63,13 +63,17 @@
     <string name="add_deployment_from_repository">Content Repository:</string>
     <string name="add_deployment_to_group">Add to Group:</string>
 
-    <!--  DeploymentDetailsDialogFragment Common Messages -->
+    <!--  DeploymentDetailsDialogFragment Messages -->
     <string name="done">Done</string>
     <string name="key">Key:</string>
     <string name="name">Name:</string>
     <string name="runtimeName">Runtime Name:</string>
     <string name="missing_params">Please complete at least Name and Runtime Name!</string>
 
+    <!--  ProfileViewFragment Messages -->
+    <string name="attributes">Attributes</string>
+    <string name="child_types">Child Types</string>
+    <string name="operations">Operations</string>
 
     <!--  ProgressDialog Common Messages -->
     <string name="connecting">Connecting, please wait..</string>

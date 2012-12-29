@@ -23,7 +23,6 @@
 package org.cvasilak.jboss.mobile.admin.util;
 
 import android.content.Context;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -40,19 +39,12 @@ public class MetricsAdapter extends ArrayAdapter<Metric> {
     }
 
     public MetricsAdapter(Context context, List<Metric> metrics) {
-        super(context, android.R.layout.simple_list_item_2, metrics);
+        super(context, android.R.layout.simple_list_item_2, android.R.id.text1, metrics);
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        TwoLineListItem row;
-
-        if (convertView == null) {
-            LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            row = (TwoLineListItem) inflater.inflate(android.R.layout.simple_list_item_2, null);
-        } else {
-            row = (TwoLineListItem) convertView;
-        }
+        TwoLineListItem row = (TwoLineListItem) super.getView(position, convertView, parent);
 
         Metric metric = getItem(position);
 

@@ -415,4 +415,11 @@ public class JBossOperationsManager {
         task = new TalkToJBossServerTask(context, server, callback);
         task.execute(params);
     }
+
+    public void genericRequest(ParametersMap params, final Callback callback) {
+        attach(callback);
+
+        task = new TalkToJBossServerTask(context, server, callback);
+        task.execute(params);
+    }
 }

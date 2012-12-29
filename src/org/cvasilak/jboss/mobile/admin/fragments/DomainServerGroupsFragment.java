@@ -49,7 +49,7 @@ import java.util.Map;
 
 public class DomainServerGroupsFragment extends SherlockListFragment {
 
-    private static final String TAG = JMSQueuesViewController.class.getSimpleName();
+    private static final String TAG = JMSQueuesViewFragment.class.getSimpleName();
 
     private JBossAdminApplication application;
 

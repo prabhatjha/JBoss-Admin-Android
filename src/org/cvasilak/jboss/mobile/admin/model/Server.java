@@ -1,5 +1,5 @@
 /*
- * JBoss Admin  - Generated on 21/05/12
+ * JBoss Admin
  * Copyright 2012, Christos Vasilakis, and individual contributors.
  * See the copyright.txt file in the distribution for a full
  * listing of individual contributors.
@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.cvasilak.jboss.mobile.admin.model;
 
 import java.io.Serializable;
@@ -83,10 +82,10 @@ public class Server implements Serializable {
         this.password = password;
     }
 
-    public String  getHostPort() {
+    public String getHostPort() {
         StringBuilder builder = new StringBuilder();
 
-        builder.append( isSSLSecured? "https://": "http://");
+        builder.append(isSSLSecured ? "https://" : "http://");
 
         if (username != null && password != null)
             builder.append(username).append(":").append(password).append("@");
