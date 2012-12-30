@@ -75,6 +75,11 @@
     <string name="child_types">Child Types</string>
     <string name="operations">Operations</string>
 
+    <!--  ChildResourcesViewFragment Messages -->
+    <string name="child_resources">Child Resources</string>
+    <string name="generic_operations">Generic Operations</string>
+    <string name="undefined">--Undefined--</string>
+
     <!--  ProgressDialog Common Messages -->
     <string name="connecting">Connecting, please wait..</string>
     <string name="fetchingDomainInfo">Fetching domain information, please wait..</string>
