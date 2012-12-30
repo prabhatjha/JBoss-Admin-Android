@@ -255,7 +255,10 @@ public class ServersViewActivity extends SherlockListActivity {
 
     @Override
     public Object onRetainNonConfigurationInstance() {
-        return application.getOperationsManager().getCallback();
+        if (application.getOperationsManager() != null)
+            return application.getOperationsManager().getCallback();
+
+        return null;
     }
 
     class ServerAdapter extends ArrayAdapter<Server> {
