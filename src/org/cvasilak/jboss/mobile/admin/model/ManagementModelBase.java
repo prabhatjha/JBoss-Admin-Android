@@ -22,7 +22,7 @@
 
 package org.cvasilak.jboss.mobile.admin.model;
 
-public abstract class ManagementModelBase {
+public abstract class ManagementModelBase implements Comparable<ManagementModelBase> {
 
     public enum Type {
         STRING,
@@ -77,5 +77,11 @@ public abstract class ManagementModelBase {
 
     public void setValueType(Type valueType) {
         this.valueType = valueType;
+    }
+
+    // Allow sort by name
+    @Override
+    public int compareTo(ManagementModelBase another) {
+        return name.compareTo(another.name);
     }
 }
