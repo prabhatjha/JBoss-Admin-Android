@@ -240,10 +240,6 @@ public class ChildResourcesViewFragment extends SherlockListFragment {
             adapter.addAdapter(new IconTextRowAdapter(getActivity(), Arrays.asList(getString(R.string.generic_operations)), R.drawable.ic_operations));
         }
 
-        if (childResources.size() == 0 && !hasGenericOps) {
-            adapter.addAdapter(new IconTextRowAdapter(getActivity(), Arrays.asList(getString(R.string.undefined)), R.drawable.ic_operations));
-        }
-
         setListAdapter(adapter);
     }
 }
