@@ -96,7 +96,7 @@ public class RuntimeViewFragment extends SherlockListFragment {
                     application.getOperationsManager().changeActiveMonitoringServer(host, server);
 
                     // update table to reflect mode
-                    updateTable();
+                    buildTable();
                 }
 
                 @Override
@@ -106,13 +106,13 @@ public class RuntimeViewFragment extends SherlockListFragment {
                     // HTTP/1.1 500 Internal Server Error
                     // occurred doing :read-children-resources(child-type=host)
                     // the server is running in standalone mode, we can live with that
-                    updateTable();
+                    buildTable();
                 }
             });
         }
     }
 
-    private void updateTable() {
+    private void buildTable() {
         Map<String, List<String>> table = new HashMap<String, List<String>>();
 
         table.put("Server Status", Arrays.asList("Configuration", "JVM"));
