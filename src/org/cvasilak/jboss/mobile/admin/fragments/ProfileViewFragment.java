@@ -27,6 +27,8 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -48,10 +50,7 @@ import org.cvasilak.jboss.mobile.admin.util.IconTextRowAdapter;
 import org.cvasilak.jboss.mobile.admin.util.ParametersMap;
 import org.cvasilak.jboss.mobile.admin.util.commonsware.MergeAdapter;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ProfileViewFragment extends SherlockListFragment {
 
@@ -66,6 +65,17 @@ public class ProfileViewFragment extends SherlockListFragment {
 
     private ArrayList<String> path;
 
+    public static ProfileViewFragment newInstance(ArrayList<String> path) {
+        ProfileViewFragment f = new ProfileViewFragment();
+
+        Bundle args = new Bundle();
+        args.putStringArrayList("path", path);
+
+        f.setArguments(args);
+
+        return f;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
@@ -73,6 +83,10 @@ public class ProfileViewFragment extends SherlockListFragment {
         Log.d(TAG, "@onCreate()");
 
         application = (JBossAdminApplication) getActivity().getApplication();
+
+        if (getArguments() != null) {
+            this.path = getArguments().getStringArrayList("path");
+        }
 
         MergeAdapter adapter = new MergeAdapter();
 
@@ -114,7 +128,6 @@ public class ProfileViewFragment extends SherlockListFragment {
         refresh();
     }
 
-
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_refresh, menu);
@@ -139,13 +152,33 @@ public class ProfileViewFragment extends SherlockListFragment {
 
         String selection;
 
-        if (position - 1 <= attributes.size()) {
+        Fragment fragment = null;
+
+        if (position - 1 <= attributes.size()) { // Attribute selection
             selection = attributes.get(position - 1).getName();
-        } else if (position - 2 <= (attributes.size() + childTypes.size())) {
+
+            // TODO: show attributes screens
+        } else if (position - 2 <= (attributes.size() + childTypes.size())) { // ChildType selection
             selection = childTypes.get(position - 2 - attributes.size()).getName();
-        } else {
-            Log.d(TAG, "operation");
+
+            fragment = ChildResourcesViewFragment.newInstance(this.path, selection);
+
+        } else { // Operation selection
+            // TODO: show operations screen
         }
+
+        // TODO: remove when all screens are implemented
+        if (fragment == null)
+            return;
+
+        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+        transaction.setCustomAnimations(android.R.anim.slide_in_left,
+                android.R.anim.slide_out_right, android.R.anim.slide_in_left,
+                android.R.anim.slide_out_right);
+
+        transaction.addToBackStack(null)
+                .replace(android.R.id.content, fragment, fragment.getClass().getSimpleName())
+                .commit();
     }
 
     public void refresh() {
@@ -153,11 +186,11 @@ public class ProfileViewFragment extends SherlockListFragment {
 
         ParametersMap step1 = ParametersMap.newMap()
                 .add("operation", "read-resource")
-                .add("address", this.path == null ? Arrays.asList("/") : this.path);
+                .add("address", (path == null ? Arrays.asList("/") : this.path));
 
         ParametersMap step2 = ParametersMap.newMap()
                 .add("operation", "read-children-types")
-                .add("address", this.path == null ? Arrays.asList("/") : this.path);
+                .add("address", (path == null ? Arrays.asList("/") : this.path));
 
         ParametersMap params = ParametersMap.newMap()
                 .add("operation", "composite")
@@ -208,6 +241,18 @@ public class ProfileViewFragment extends SherlockListFragment {
                     }
                 }
 
+                // if empty add dummies to fill the UI
+                // add a dummy one to fill the space
+                if (childTypes.size() == 0)
+                    childTypes.add(new ChildType());
+
+                if (attributes.size() == 0)
+                    attributes.add(new Attribute());
+
+                // sort by name
+                Collections.sort(attributes);
+                Collections.sort(childTypes);
+
                 // refresh table
                 ((MergeAdapter) getListAdapter()).notifyDataSetChanged();
             }
@@ -228,7 +273,6 @@ public class ProfileViewFragment extends SherlockListFragment {
 
             }
         }
-
         );
     }
 
@@ -251,6 +295,11 @@ public class ProfileViewFragment extends SherlockListFragment {
                 row.getText2().setText("");
 
             return (row);
+        }
+
+        @Override
+        public boolean isEnabled(int position) {
+            return (getItem(position).getName() != null);
         }
     }
 
@@ -279,6 +328,11 @@ public class ProfileViewFragment extends SherlockListFragment {
 
             return (row);
         }
+
+        @Override
+        public boolean isEnabled(int position) {
+            return (getItem(position).getName() != null);
+        }
     }
 
     static class ChildTypeHolder {
@@ -292,7 +346,9 @@ public class ProfileViewFragment extends SherlockListFragment {
 
         void populateFrom(ChildType childType) {
             name.setText(childType.getName());
-            icon.setImageResource(R.drawable.ic_folder);
+
+            if (childType.getName() != null)
+                icon.setImageResource(R.drawable.ic_folder);
         }
     }
 }
